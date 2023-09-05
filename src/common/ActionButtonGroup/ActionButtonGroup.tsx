@@ -23,7 +23,6 @@ const ActionButtonGroup: React.FC<ActionButtonGroupProps> = ({
   return (
     <Paper elevation={3} className="custom-paper">
       <div style={{ alignContent: "center" }}>
-        // remove duplication
         <Box className="custom-box">
           <IconButton aria-label="edit" onClick={onEditClick}>
             <EditIcon />

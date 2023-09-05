@@ -1,0 +1,15 @@
+/* DeleteDialog.css */
+
+/* Style the dialog title */
+.MuiDialogTitle-root {
+  font-weight: bold;
+}
+
+/* Style the dialog content */
+.MuiDialog-paper {
+  background-color: rgb(
+    207,
+    200,
+    200
+  ); /* Change the background color to light grey */
+}

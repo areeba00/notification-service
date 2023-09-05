@@ -1,15 +1,11 @@
 import React from "react";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import { ChangeEvent } from "react";
-import ActionButtonGroup from "../../common/Buttons";
+import ActionButtonGroup from "../../common/ActionButtonGroup/ActionButtonGroup";
 import "./Application.css";
+import DialogBox from "../../common/EditDialogBox/DialogBox";
+import DeleteDialog from "../../common/DeleteDialog/DeleteDialog";
 
 interface Applications {
   id: number;
@@ -26,6 +22,47 @@ interface ApiResponse {
 }
 
 function Applications() {
+  // delete dialog things
+
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState(false);
+
+  const [applicationToDelete, setApplicationToDelete] =
+    useState<Applications | null>(null);
+
+  // Function to open the delete confirmation dialog
+  const openDeleteConfirmation = (application: Applications) => {
+    setApplicationToDelete(application);
+    setIsDeleteConfirmationOpen(true);
+  };
+
+  // Function to close the delete confirmation dialog
+  const closeDeleteConfirmation = () => {
+    setIsDeleteConfirmationOpen(false);
+  };
+
+  const confirmDelete = () => {
+    if (applicationToDelete) {
+      // Create a new array that filters out the application to be deleted
+      const updatedApplications = applications.filter(
+        (app) => app.id !== applicationToDelete.id
+      );
+
+      // Update the state with the new array
+      setApplications(updatedApplications);
+
+      axios
+        .delete(
+          "http://localhost:5000/api/applications/" + applicationToDelete.id
+        )
+        .catch((err) => console.log(err.message));
+
+      // Close the delete confirmation dialog
+      closeDeleteConfirmation();
+    }
+  };
+
+  //edit form things
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -53,23 +90,23 @@ function Applications() {
 
   useEffect(() => {
     axios
-      .get<ApiResponse>("http://localhost:5000/api/applications?limit=4")
+      .get<ApiResponse>("http://localhost:5000/api/applications")
       .then((res) => setApplications(res.data.applications));
   }, []);
 
-  const deleteApplication = (application: Applications) => {
-    // Create a new array that filters out the application to be deleted
-    const updatedApplications = applications.filter(
-      (app) => app.id !== application.id
-    );
+  // const deleteApplication = (application: Applications) => {
+  //   // Create a new array that filters out the application to be deleted
+  //   const updatedApplications = applications.filter(
+  //     (app) => app.id !== application.id
+  //   );
 
-    // Update the state with the new array
-    setApplications(updatedApplications);
+  //   // Update the state with the new array
+  //   setApplications(updatedApplications);
 
-    axios
-      .delete("http://localhost:5000/api/applications/" + application.id)
-      .catch((err) => console.log(err.message));
-  };
+  //   axios
+  //     .delete("http://localhost:5000/api/applications/" + application.id)
+  //     .catch((err) => console.log(err.message));
+  // };
 
   return (
     <div className="container-fluid">
@@ -84,62 +121,29 @@ function Applications() {
                 <div className="text-center">
                   <ActionButtonGroup
                     onEditClick={openModal}
-                    onDeleteClick={() => deleteApplication(app)}
+                    onDeleteClick={() => openDeleteConfirmation(app)}
                     // onToggleClick={() => toggleApplication(app)}
                     isActive={app.isActive}
                   />
                 </div>
                 <div>
-                  <Dialog
+                  <DialogBox
                     open={isModalOpen}
                     onClose={closeModal}
-                    PaperProps={{
-                      style: {
-                        width: "90%",
-                        maxWidth: "600px",
-                        height: "60vh",
-                        maxHeight: "600px",
-                        borderRadius: "10px",
-                      },
-                    }}
-                  >
-                    <DialogTitle
-                      style={{ textAlign: "center", marginTop: "20px" }}
-                    >
-                      Edit Application
-                    </DialogTitle>
-                    <DialogContent style={{ padding: "26px" }}>
-                      <TextField
-                        label="Name"
-                        name="name"
-                        fullWidth
-                        margin="dense"
-                        variant="outlined"
-                        style={{ marginBottom: "30px", marginTop: "10px" }}
-                        value={formData.name}
-                        onChange={handleInputChange}
-                      />
-                      <TextField
-                        label="Description"
-                        name="description"
-                        fullWidth
-                        margin="dense"
-                        variant="outlined"
-                        // style={{ marginBottom: "20px" }}
-                        value={formData.description}
-                        onChange={handleInputChange}
-                      />
-                    </DialogContent>
-                    <DialogActions>
-                      <Button onClick={closeModal} color="secondary">
-                        Cancel
-                      </Button>
-                      <Button onClick={handleSave} color="primary">
-                        Save
-                      </Button>
-                    </DialogActions>
-                  </Dialog>
+                    formData={formData}
+                    handleInputChange={handleInputChange}
+                    handleSave={handleSave}
+                  />
                 </div>
+                <DeleteDialog
+                  open={isDeleteConfirmationOpen}
+                  onClose={closeDeleteConfirmation}
+                  onConfirm={confirmDelete}
+                  applicationName={applicationToDelete?.name || ""}
+                  applicationDescription={
+                    applicationToDelete?.description || ""
+                  }
+                />
               </div>
             </div>
           </div>
