@@ -33,12 +33,12 @@ body {
 
 /* Style the login header title */
 #login-headerTitle {
-  text-align: center;
+  /* text-align: center; */
   font-family: "open sans", sans-serif;
-  font-size: 1rem;
+  font-size: 1.3rem;
   display: inline-block;
   padding-left: 10rem;
-  margin-left: -4px;
+  margin-left: 50px;
   color: gray;
 }
 

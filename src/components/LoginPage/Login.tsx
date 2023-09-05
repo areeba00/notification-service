@@ -15,7 +15,7 @@ const Login = () => {
       <div id="loginform">
         <br />
         <img src={img} alt="PlanIt Pro logo" />
-        <h1 id="login-headerTitle">login to continue</h1>
+        <h1 id="login-headerTitle">Login to continue </h1>
         <div className="row">
           <label>Username</label>
           <input
