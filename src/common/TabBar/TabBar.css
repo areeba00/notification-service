@@ -1,0 +1,19 @@
+.tabbar-custom {
+  margin-left: 50px; /* Adjust the value as needed */
+  margin-right: 50px;
+  margin-top: 20px;
+  background-color: #264552;
+  border-radius: 10px;
+}
+
+/* Add top padding */
+.navbar-brand {
+  padding-top: 10px;
+  /* font-size: 50px; Adjust the value as needed */
+}
+.button {
+  font-size: 50px;
+  color: rgb(255, 255, 255);
+  margin-left: 30px;
+  /* Add other icon styles here */
+}

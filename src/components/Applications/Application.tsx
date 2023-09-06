@@ -1,5 +1,5 @@
 import React from "react";
-import axios from "axios";
+import apiClient from "../../apiService/api-client";
 import { useEffect, useState } from "react";
 import "./Application.css";
 
@@ -25,8 +25,8 @@ function Applications() {
   const [applications, setApplications] = useState<Applications[]>([]);
 
   useEffect(() => {
-    axios
-      .get<ApiResponse>("http://localhost:5000/api/applications")
+    apiClient
+      .get<ApiResponse>("/applications")
       .then((res) => setApplications(res.data.applications));
   }, []);
 
@@ -39,8 +39,8 @@ function Applications() {
     // Update the state with the new array
     setApplications(updatedApplications);
 
-    axios
-      .delete("http://localhost:5000/api/applications/" + application.id)
+    apiClient
+      .delete("/applications/" + application.id)
       .catch((err) => console.log(err.message));
   };
 

@@ -1,11 +1,22 @@
-.custom-paper {
-    width: auto; /* Adjust the width as needed */
-    height: 50px; /* Adjust the height as needed */
-    padding: 16px; /* Add padding for spacing */
-    display: flex; /* Display its children in a row */
-    justify-content: space-between; /* Space out the children evenly */
-    align-items: center; /* Vertically center its children */
-    background-color: lightblue; /* Background color for the Paper container */
-    border-radius: 8px; /* Rounded corners for the Paper container */
-  }
-  
+.custom-button-container {
+  /* background-color: lightgrey; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+}
+
+.custom-button-container button {
+  background-color: transparent; /* Remove the background color for buttons */
+  border: none; /* Remove any borders */
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+}
+
+.custom-button-container button:hover {
+  background-color: transparent; /* Set the background color on hover (if needed) */
+}
+.custom-button-container .icon-button:hover {
+  transform: scale(1.1); /* Change the background color on hover */
+}
