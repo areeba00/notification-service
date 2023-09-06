@@ -1,5 +1,5 @@
 .custom-button-container {
-  /* background-color: lightgrey;  */
+  /* background-color: lightgrey; */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -16,4 +16,7 @@
 
 .custom-button-container button:hover {
   background-color: transparent; /* Set the background color on hover (if needed) */
+}
+.custom-button-container .icon-button:hover {
+  transform: scale(1.1); /* Change the background color on hover */
 }

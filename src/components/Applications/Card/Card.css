@@ -18,7 +18,7 @@ article.card {
 
   top: 00%;
   left: 10%;
-  width: 270px;
+  width: 240px;
   height: 220px;
   /* transform: translate(-50%, -50%) translateZ(0); */
   border-radius: 13px;
@@ -118,9 +118,9 @@ article.card .txt {
   transition: 0.5s 0.25s cubic-bezier(0.17, 0.67, 0.5, 1.03);
   margin-bottom: 30px;
 } */
-article.card:hover .C-infos {
+/* article.card:hover .C-infos {
   transform: translateY(-110px);
-}
+} */
 article.card:hover .C-infos .seats,
 article.card:hover .C-infos .txt,
 article.card:hover .C-infos .edit_options {

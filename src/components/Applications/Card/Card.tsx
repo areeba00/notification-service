@@ -1,4 +1,3 @@
-import { RiRadioButtonLine } from "react-icons/ri";
 import { useState, ChangeEvent } from "react";
 
 import "./Card.css";
@@ -83,14 +82,12 @@ const Cards = ({ applications, deleteHandler }: Props) => {
           adipisicing elit. Totam, voluptatum!
         </p>
 
-        <div className="text-center">
-          <ActionButtonGroup
-            onEditClick={openModal}
-            onDeleteClick={() => openDeleteConfirmation(applications)}
-            // onToggleClick={() => toggleApplication(app)}
-            isActive={applications.isActive}
-          />
-        </div>
+        <ActionButtonGroup
+          onEditClick={openModal}
+          onDeleteClick={() => openDeleteConfirmation(applications)}
+          // onToggleClick={() => toggleApplication(app)}
+          isActive={applications.isActive}
+        />
       </div>
       <div>
         <DialogBox
