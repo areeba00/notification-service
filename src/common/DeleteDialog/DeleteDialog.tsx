@@ -11,16 +11,16 @@ interface ConfirmationDialogProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  applicationName: string; // Add the application name prop
-  applicationDescription: string;
+  // applicationName: string; // Add the application name prop
+  // applicationDescription: string;
 }
 
 const DeleteDialog: React.FC<ConfirmationDialogProps> = ({
   open,
   onClose,
   onConfirm,
-  applicationName, // Access the application name prop
-  applicationDescription,
+  // applicationName, // Access the application name prop
+  // applicationDescription,
 }) => {
   return (
     <Dialog
@@ -31,12 +31,12 @@ const DeleteDialog: React.FC<ConfirmationDialogProps> = ({
     >
       <DialogTitle>Confirm Deletion</DialogTitle>
       <DialogContent>
-        <p>
+        {/* <p>
           Application Name: <strong>{applicationName}</strong>
         </p>
         <p>
           Description: <em>{applicationDescription}</em>
-        </p>
+        </p> */}
         <p>Are you sure you want to delete this application?</p>
       </DialogContent>
       <DialogActions>
