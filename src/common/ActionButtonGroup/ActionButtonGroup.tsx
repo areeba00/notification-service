@@ -6,6 +6,8 @@ import ToggleOnIcon from "@mui/icons-material/ToggleOn";
 import ToggleOffIcon from "@mui/icons-material/ToggleOff";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
+import RadioButtonCheckedRoundedIcon from "@mui/icons-material/RadioButtonCheckedRounded";
+import "./ActionButtonGroup.css";
 
 interface ActionButtonGroupProps {
   onEditClick: () => void;
@@ -21,29 +23,21 @@ const ActionButtonGroup: React.FC<ActionButtonGroupProps> = ({
   isActive,
 }) => {
   return (
-    <Paper elevation={3} className="custom-paper">
-      <div style={{ alignContent: "center" }}>
-        <Box className="custom-box">
-          <IconButton aria-label="edit" onClick={onEditClick}>
-            <EditIcon />
-          </IconButton>
-        </Box>
-        <Box className="custom-box" onClick={onDeleteClick}>
-          <IconButton aria-label="delete" className="delete-button">
-            <DeleteIcon />
-          </IconButton>
-        </Box>
-        <Box className="custom-box">
-          <IconButton aria-label="toggle">
-            {isActive ? (
-              <ToggleOnIcon color="primary" />
-            ) : (
-              <ToggleOffIcon color="primary" />
-            )}
-          </IconButton>
-        </Box>
-      </div>
-    </Paper>
+    <div className="custom-button-container">
+      <IconButton aria-label="edit" onClick={onEditClick}>
+        <EditIcon />
+      </IconButton>
+      <IconButton aria-label="delete" onClick={onDeleteClick}>
+        <DeleteIcon />
+      </IconButton>
+      <IconButton aria-label="toggle">
+        {isActive ? (
+          <RadioButtonCheckedRoundedIcon color="secondary" />
+        ) : (
+          <RadioButtonCheckedRoundedIcon color="primary" />
+        )}
+      </IconButton>
+    </div>
   );
 };
 

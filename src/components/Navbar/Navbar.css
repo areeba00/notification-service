@@ -1,3 +1,11 @@
 .custom-navbar {
-  background-color: rgb(15, 91, 161);
+  background-color: rgb(255, 255, 255);
+  height: 60px;
+}
+
+.navbar-logo {
+  width: 80px; /* Make the image a little bigger */
+  height: 50px;
+  margin-left: 25px;
+  margin-bottom: 20px;
 }

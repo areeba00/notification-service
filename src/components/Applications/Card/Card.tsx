@@ -78,9 +78,11 @@ const Cards = ({ applications, deleteHandler }: Props) => {
     <article className="card">
       <div className="C-infos" key={applications.id}>
         <h2 className="C-title">{applications.name}</h2>
-        <h3 className="C-status">
-          Status: &ensp; <RiRadioButtonLine className="TB-radio-button" />
-        </h3>
+        <p className="C-txt">
+          {/* {app.description} */} Lorem ipsum dolor sit, amet consectetur
+          adipisicing elit. Totam, voluptatum!
+        </p>
+
         <div className="text-center">
           <ActionButtonGroup
             onEditClick={openModal}
@@ -89,12 +91,6 @@ const Cards = ({ applications, deleteHandler }: Props) => {
             isActive={applications.isActive}
           />
         </div>
-        <br></br>
-        {/* <h3 className="seats">the details</h3> */}
-        <p className="C-txt">
-          {/* {app.description} */} Lorem ipsum dolor sit, amet consectetur
-          adipisicing elit. Totam, voluptatum!
-        </p>
       </div>
       <div>
         <DialogBox

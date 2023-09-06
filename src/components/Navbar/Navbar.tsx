@@ -8,21 +8,15 @@ function Navbar() {
   return (
     <nav className="navbar navbar-light custom-navbar">
       <a className="navbar-brand" href="#">
-        <img
-          src={img}
-          width="70"
-          height="40"
-          className="d-inline-block align-top"
-          alt=""
-        />
+        <img src={img} className=" navbar-logo" alt="" />
       </a>
-      <div className="user-icon">
+      {/* <div className="user-icon">
         <IconButton aria-label="user-profile">
           <Avatar>
             <AccountCircleIcon />
           </Avatar>
         </IconButton>
-      </div>
+      </div> */}
     </nav>
   );
 }
