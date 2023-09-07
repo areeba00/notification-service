@@ -9,7 +9,7 @@ function App() {
       <Navbar />
       <TabBar title={"APPLICATIONS"} />
       <Applications />
-      <TabBar title={"EVENTS"} />
+      {/* <TabBar title={"EVENTS"} /> */}
     </div>
   );
 }

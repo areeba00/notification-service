@@ -2,7 +2,7 @@ import React from "react";
 import apiClient from "../../apiService/api-client";
 import { useEffect, useState } from "react";
 import "./Application.css";
-
+import Grid from "../../common/Grid/Grid";
 import Cards from "./Card/Card";
 import { BiSolidRightArrow, BiSolidLeftArrow } from "react-icons/bi";
 import "./CardSlider/CardSlider.css";
@@ -42,6 +42,27 @@ function Applications() {
     apiClient
       .delete("/applications/" + application.id)
       .catch((err) => console.log(err.message));
+  };
+
+  const editApplication = (updatedApplication: Applications) => {
+    // Remove the "id" field from the payload
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, created_at, updated_at, isActive, ...dataWithoutId } =
+      updatedApplication;
+
+    // Send a PUT request to update the application on the server
+    apiClient
+      .put("/applications/" + updatedApplication.id, dataWithoutId) // Send the updated data without the "id"
+      .then((response) => {
+        // Assuming the server returns the updated application data
+        const updatedApps = applications.map((app) =>
+          app.id === updatedApplication.id ? response.data : app
+        );
+        setApplications(updatedApps);
+      })
+      .catch((error) => {
+        console.error("Error updating application:", error);
+      });
   };
 
   // card things
@@ -93,7 +114,12 @@ function Applications() {
                       : ""
                   }`}
                 >
-                  <Cards applications={app} deleteHandler={deleteApplication} />
+                  <Cards
+                    applications={app}
+                    deleteHandler={deleteApplication}
+                    editHandler={editApplication}
+                    gridComponent={Grid}
+                  />
                 </div>
               ))}
             </div>

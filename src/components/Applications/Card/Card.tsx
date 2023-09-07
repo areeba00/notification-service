@@ -1,10 +1,10 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 
 import "./Card.css";
 import ActionButtonGroup from "../../../common/ActionButtonGroup/ActionButtonGroup";
 import DialogBox from "../../../common/EditDialogBox/DialogBox";
 import DeleteDialog from "../../../common/DeleteDialog/DeleteDialog";
-
+import apiClient from "../../../apiService/api-client";
 interface Applications {
   id: number;
   name: string;
@@ -14,19 +14,37 @@ interface Applications {
   isActive: boolean;
 }
 
+interface Events {
+  id: number;
+  name: string;
+  description: string;
+  application_id: number;
+  created_at: string;
+  updated_at: string;
+  isActive: boolean;
+}
+
 interface Props {
   applications: Applications;
   deleteHandler: (application: Applications) => void;
+  editHandler: (editedApplication: Applications) => void;
+  gridComponent: React.ComponentType<{ events: Events[] }>;
 }
 
-const Cards = ({ applications, deleteHandler }: Props) => {
+const Cards = ({
+  applications,
+  deleteHandler,
+  editHandler,
+  gridComponent: Grid,
+}: Props) => {
   //delete things
-
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
-
   const [applicationToDelete, setApplicationToDelete] =
     useState<Applications | null>(null);
+
+  // Clicked state for the card
+  const [isCardClicked, setIsCardClicked] = useState(false);
 
   // Function to open the delete confirmation dialog
   const openDeleteConfirmation = (application: Applications) => {
@@ -49,11 +67,14 @@ const Cards = ({ applications, deleteHandler }: Props) => {
   };
 
   // edit things
+
+  const [associatedEvents, setAssociatedEvents] = useState<Events[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
+
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -61,6 +82,7 @@ const Cards = ({ applications, deleteHandler }: Props) => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData({
@@ -70,11 +92,48 @@ const Cards = ({ applications, deleteHandler }: Props) => {
   };
 
   const handleSave = () => {
+    const editedApplication: Applications = {
+      ...applications,
+      name: formData.name,
+      description: formData.description,
+    };
+
+    // Call the editHandler to update the application
+    editHandler(editedApplication);
     closeModal();
   };
 
+  // Toggle card click
+  const toggleCardClick = () => {
+    setIsCardClicked(!isCardClicked);
+  };
+
+  useEffect(() => {
+    if (isCardClicked) {
+      fetchEventsForApplication(applications.id);
+      console.log(applications.id);
+    }
+  }, [isCardClicked, applications.id]);
+
+  const fetchEventsForApplication = (applicationId: number) => {
+    // Make a GET request to fetch events for the specified application
+    apiClient
+      .get(`/events?application_id=${applicationId}`)
+      .then((response) => {
+        // Update the state with the fetched events
+        setAssociatedEvents(response.data.events);
+        console.log(response.data.events);
+      })
+      .catch((error) => {
+        console.error("Error fetching events:", error);
+      });
+  };
+
   return (
-    <article className="card">
+    <article
+      className={`card ${isCardClicked ? "clicked" : ""}`}
+      onClick={toggleCardClick}
+    >
       <div className="C-infos" key={applications.id}>
         <h2 className="C-title">{applications.name}</h2>
         <p className="C-txt">
@@ -85,7 +144,6 @@ const Cards = ({ applications, deleteHandler }: Props) => {
         <ActionButtonGroup
           onEditClick={openModal}
           onDeleteClick={() => openDeleteConfirmation(applications)}
-          // onToggleClick={() => toggleApplication(app)}
           isActive={applications.isActive}
         />
       </div>
@@ -105,6 +163,7 @@ const Cards = ({ applications, deleteHandler }: Props) => {
           onConfirm={confirmDelete}
         />
       </div>
+      <Grid events={associatedEvents} />
     </article>
   );
 };
