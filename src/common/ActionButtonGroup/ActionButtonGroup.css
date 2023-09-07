@@ -1,14 +1,12 @@
 .custom-button-container {
-  /* background-color: lightgrey; */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
 }
 
 .custom-button-container button {
   background-color: transparent; /* Remove the background color for buttons */
-  border: none; /* Remove any borders */
+  border: none;
   cursor: pointer;
   margin: 0;
   padding: 0;
