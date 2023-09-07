@@ -71,3 +71,6 @@ article.card:hover .C-infos .txt,
 article.card:hover .C-infos .edit_options {
   opacity: 1;
 }
+article.card:hover .C-infos {
+  transform: translateY(-110px);
+}
