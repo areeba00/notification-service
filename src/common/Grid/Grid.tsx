@@ -37,6 +37,9 @@ interface GridComponentProps {
 }
 const Grid = ({ events }: GridComponentProps) => {
   console.log("Props in Grid component:", events);
+  if (events.length === 0) {
+    return <div>Loading...</div>;
+  }
   return (
     <>
       <br />

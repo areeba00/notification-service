@@ -5,6 +5,9 @@ import ActionButtonGroup from "../../../common/ActionButtonGroup/ActionButtonGro
 import DialogBox from "../../../common/EditDialogBox/DialogBox";
 import DeleteDialog from "../../../common/DeleteDialog/DeleteDialog";
 import apiClient from "../../../apiService/api-client";
+import Grid from "../../../common/Grid/Grid";
+import Events from "../../Events/Events";
+
 interface Applications {
   id: number;
   name: string;
@@ -14,29 +17,19 @@ interface Applications {
   isActive: boolean;
 }
 
-interface Events {
-  id: number;
-  name: string;
-  description: string;
-  application_id: number;
-  created_at: string;
-  updated_at: string;
-  isActive: boolean;
-}
-
 interface Props {
   applications: Applications;
   deleteHandler: (application: Applications) => void;
   editHandler: (editedApplication: Applications) => void;
-  gridComponent: React.ComponentType<{ events: Events[] }>;
+  // gridComponent: React.ComponentType<{ events: Events[] }>;
 }
 
 const Cards = ({
   applications,
   deleteHandler,
   editHandler,
-  gridComponent: Grid,
-}: Props) => {
+}: // gridComponent: Grid,
+Props) => {
   //delete things
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
@@ -68,7 +61,7 @@ const Cards = ({
 
   // edit things
 
-  const [associatedEvents, setAssociatedEvents] = useState<Events[]>([]);
+  // const [associatedEvents, setAssociatedEvents] = useState<Events[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -103,36 +96,51 @@ const Cards = ({
     closeModal();
   };
 
-  // Toggle card click
-  const toggleCardClick = () => {
-    setIsCardClicked(!isCardClicked);
-  };
+  const [selectedApplicationId, setSelectedApplicationId] = useState<
+    number | null
+  >(null);
 
-  useEffect(() => {
-    if (isCardClicked) {
-      fetchEventsForApplication(applications.id);
-      console.log(applications.id);
+  const handleCardClick = () => {
+    // Toggle the card clicked state
+    setIsCardClicked((prevIsCardClicked) => !prevIsCardClicked);
+
+    // If the card is clicked, set the selected application ID; otherwise, clear it
+    if (!isCardClicked) {
+      setSelectedApplicationId(applications.id);
+    } else {
+      setSelectedApplicationId(null);
     }
-  }, [isCardClicked, applications.id]);
-
-  const fetchEventsForApplication = (applicationId: number) => {
-    // Make a GET request to fetch events for the specified application
-    apiClient
-      .get(`/events?application_id=${applicationId}`)
-      .then((response) => {
-        // Update the state with the fetched events
-        setAssociatedEvents(response.data.events);
-        console.log(response.data.events);
-      })
-      .catch((error) => {
-        console.error("Error fetching events:", error);
-      });
   };
+  // Toggle card click
+  // const toggleCardClick = () => {
+  //   setIsCardClicked(!isCardClicked);
+  // };
+
+  // useEffect(() => {
+  //   if (isCardClicked) {
+  //     fetchEventsForApplication(applications.id);
+  //     console.log(applications.id);
+  //   }
+  // }, [isCardClicked, applications.id]);
+
+  // const fetchEventsForApplication = (applicationId: number) => {
+  //   // Make a GET request to fetch events for the specified application
+  //   apiClient
+  //     .get(`/events?application_id=${applicationId}`)
+  //     .then((response) => {
+  //       // Update the state with the fetched events
+  //       setAssociatedEvents(response.data.events);
+  //       console.log(response.data.events);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching events:", error);
+  //     });
+  // };
 
   return (
     <article
       className={`card ${isCardClicked ? "clicked" : ""}`}
-      onClick={toggleCardClick}
+      onClick={handleCardClick}
     >
       <div className="C-infos" key={applications.id}>
         <h2 className="C-title">{applications.name}</h2>
@@ -163,7 +171,8 @@ const Cards = ({
           onConfirm={confirmDelete}
         />
       </div>
-      <Grid events={associatedEvents} />
+      {/* <Grid events={associatedEvents} /> */}
+      <Events applicationId={selectedApplicationId} />
     </article>
   );
 };

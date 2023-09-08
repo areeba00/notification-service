@@ -118,7 +118,7 @@ function Applications() {
                     applications={app}
                     deleteHandler={deleteApplication}
                     editHandler={editApplication}
-                    gridComponent={Grid}
+                    // gridComponent={Grid}
                   />
                 </div>
               ))}
