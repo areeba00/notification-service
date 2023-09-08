@@ -21,6 +21,7 @@ interface Props {
   applications: Applications;
   deleteHandler: (application: Applications) => void;
   editHandler: (editedApplication: Applications) => void;
+  onClick: () => void;
   // gridComponent: React.ComponentType<{ events: Events[] }>;
 }
 
@@ -28,6 +29,7 @@ const Cards = ({
   applications,
   deleteHandler,
   editHandler,
+  onClick,
 }: // gridComponent: Grid,
 Props) => {
   //delete things
@@ -138,42 +140,47 @@ Props) => {
   // };
 
   return (
-    <article
-      className={`card ${isCardClicked ? "clicked" : ""}`}
-      onClick={handleCardClick}
-    >
-      <div className="C-infos" key={applications.id}>
-        <h2 className="C-title">{applications.name}</h2>
-        <p className="C-txt">
-          {/* {app.description} */} Lorem ipsum dolor sit, amet consectetur
-          adipisicing elit. Totam, voluptatum!
-        </p>
+    <>
+      <article
+        className={`card ${isCardClicked ? "clicked" : ""}`}
+        onClick={() => {
+          onClick(); // Call the onClick prop to handle card click
+          handleCardClick(); // You can also keep this if needed
+        }}
+      >
+        <div className="C-infos" key={applications.id}>
+          <h2 className="C-title">{applications.name}</h2>
+          <p className="C-txt">
+            {/* {app.description} */} Lorem ipsum dolor sit, amet consectetur
+            adipisicing elit. Totam, voluptatum!
+          </p>
 
-        <ActionButtonGroup
-          onEditClick={openModal}
-          onDeleteClick={() => openDeleteConfirmation(applications)}
-          isActive={applications.isActive}
-        />
-      </div>
-      <div>
-        <DialogBox
-          open={isModalOpen}
-          onClose={closeModal}
-          formData={formData}
-          handleInputChange={handleInputChange}
-          handleSave={handleSave}
-        />
-      </div>
-      <div>
-        <DeleteDialog
-          open={isDeleteConfirmationOpen}
-          onClose={closeDeleteConfirmation}
-          onConfirm={confirmDelete}
-        />
-      </div>
-      {/* <Grid events={associatedEvents} /> */}
-      <Events applicationId={selectedApplicationId} />
-    </article>
+          <ActionButtonGroup
+            onEditClick={openModal}
+            onDeleteClick={() => openDeleteConfirmation(applications)}
+            isActive={applications.isActive}
+          />
+        </div>
+        <div>
+          <DialogBox
+            open={isModalOpen}
+            onClose={closeModal}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSave={handleSave}
+          />
+        </div>
+        <div>
+          <DeleteDialog
+            open={isDeleteConfirmationOpen}
+            onClose={closeDeleteConfirmation}
+            onConfirm={confirmDelete}
+          />
+        </div>
+        {/* <Grid events={associatedEvents} /> */}
+      </article>
+      {/* <Events applicationId={selectedApplicationId} /> */}
+    </>
   );
 };
 

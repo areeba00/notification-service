@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Paper from "@mui/material/Paper";
 import {
   Table,
@@ -8,38 +8,21 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Switch,
   Checkbox,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import "./Grid.css";
 
-// interface GridProp {
-//   id: number;
-//   name: string;
-//   enabled: boolean;
-//   Description: string;
-// }
-
-interface Events {
-  id: number;
-  name: string;
-  description: string;
-  application_id: number;
-  created_at: string;
-  updated_at: string;
-  isActive: boolean;
+interface GridProps {
+  events: {
+    id: number;
+    name: string;
+    description: string;
+  }[];
 }
 
-interface GridComponentProps {
-  events: Events[];
-}
-const Grid = ({ events }: GridComponentProps) => {
-  console.log("Props in Grid component:", events);
-  if (events.length === 0) {
-    return <div>Loading...</div>;
-  }
+const Grid = ({ events }: GridProps) => {
   return (
     <>
       <br />
@@ -56,28 +39,23 @@ const Grid = ({ events }: GridComponentProps) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {events.map((event) => {
-                  console.log("Event Name:", event.name);
-                  console.log("Event Description:", event.description);
-
-                  return (
-                    <TableRow key={event.id}>
-                      <TableCell className="checkbox-cell">
-                        <Checkbox color="primary" />
-                      </TableCell>
-                      <TableCell>{event.name}</TableCell>
-                      <TableCell> {event.description}</TableCell>
-                      <TableCell>
-                        <IconButton>
-                          <EditIcon className="Edit-icon" />
-                        </IconButton>
-                        <IconButton>
-                          <DeleteIcon className="Delete-icon" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {events.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell className="checkbox-cell">
+                      <Checkbox color="primary" />
+                    </TableCell>
+                    <TableCell>{event.name}</TableCell>
+                    <TableCell>{event.description}</TableCell>
+                    <TableCell>
+                      <IconButton>
+                        <EditIcon className="Edit-icon" />
+                      </IconButton>
+                      <IconButton>
+                        <DeleteIcon className="Delete-icon" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>

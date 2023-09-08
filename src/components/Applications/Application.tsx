@@ -2,10 +2,10 @@ import React from "react";
 import apiClient from "../../apiService/api-client";
 import { useEffect, useState } from "react";
 import "./Application.css";
-import Grid from "../../common/Grid/Grid";
 import Cards from "./Card/Card";
 import { BiSolidRightArrow, BiSolidLeftArrow } from "react-icons/bi";
 import "./CardSlider/CardSlider.css";
+import Events from "../Events/Events";
 
 interface Applications {
   id: number;
@@ -23,6 +23,15 @@ interface ApiResponse {
 
 function Applications() {
   const [applications, setApplications] = useState<Applications[]>([]);
+
+  const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(
+    null
+  );
+
+  const handleCardClick = (appId: number) => {
+    // Set the selected application ID
+    setSelectedApplicationId(appId);
+  };
 
   useEffect(() => {
     apiClient
@@ -91,6 +100,7 @@ function Applications() {
   const isAtLastCard = currentIndex === applications.length - 1;
 
   return (
+    <>
     <div className="container-fluid">
       <div className="row">
         <div className="TBS_slider-container">
@@ -118,7 +128,7 @@ function Applications() {
                     applications={app}
                     deleteHandler={deleteApplication}
                     editHandler={editApplication}
-                    // gridComponent={Grid}
+                    onClick={() => handleCardClick(app.id)}
                   />
                 </div>
               ))}
@@ -133,6 +143,8 @@ function Applications() {
         </div>
       </div>
     </div>
+    <Events applicationId={selectedApplicationId} />
+    </>
   );
 }
 

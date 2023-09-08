@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "../../apiService/api-client";
+import Grid from "../../common/Grid/Grid";
 // ... other imports ...
 
 interface Events {
@@ -42,23 +43,18 @@ const Events = ({ applicationId }: EventsProps) => {
       setEvents([]);
     }
   }, [applicationId]);
-
   return (
     <div>
-      {events.length > 0 ? (
-        events.map((event) => {
-          console.log("check");
-          console.log(event); // Add console.log here to see the event
-          return (
-            <div key={event.id}>
-              <h3>{event.name}</h3>
-              <p>{event.description}</p>
-            </div>
-          );
-        })
-      ) : (
-        <div>No events available</div>
-      )}
+      {/* Render the events */}
+      {/* {events.map((event) => (
+        <div key={event.id}>
+          <h3>{event.name}</h3>
+          <p>{event.description}</p>
+        </div>
+      ))} */}
+
+      {/* Render the Grid component and pass the events as props */}
+      <Grid events={events} />
     </div>
   );
 };
