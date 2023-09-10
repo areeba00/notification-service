@@ -87,13 +87,11 @@ const Events = ({ applicationId }: EventsProps) => {
 
   return (
     <>
-      {events.map((event) => (
-        <Grid
-          events={event}
-          deleteHandler={deleteEvent}
-          editHandler={editEvent}
-        />
-      ))}
+      <Grid
+        events={events}
+        deleteHandler={deleteEvent}
+        editHandler={editEvent}
+      />
     </>
   );
 };

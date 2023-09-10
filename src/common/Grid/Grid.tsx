@@ -1,4 +1,4 @@
-// import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import Paper from "@mui/material/Paper";
 import {
   Table,
@@ -10,7 +10,6 @@ import {
   Checkbox,
 } from "@mui/material";
 import "./Grid.css";
-import { ChangeEvent, useState } from "react";
 import ActionButtonGroup from "../ActionButtonGroup/ActionButtonGroup";
 import DialogBox from "../EditDialogBox/DialogBox";
 import DeleteDialog from "../DeleteDialog/DeleteDialog";
@@ -25,7 +24,7 @@ interface Events {
   isActive: boolean;
 }
 interface Props {
-  events: Events;
+  events: Events[];
   deleteHandler: (event: Events) => void;
   editHandler: (event: Events) => void;
 }
@@ -33,13 +32,19 @@ interface Props {
 const Grid = ({ events, deleteHandler, editHandler }: Props) => {
   console.log(events);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Events | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
 
-  const openModal = () => {
+  const openModal = (event: Events) => {
+    setSelectedEvent(event);
+    setFormData({
+      name: event.name,
+      description: event.description,
+    });
     setIsModalOpen(true);
   };
 
@@ -54,23 +59,26 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
       [name]: value,
     });
   };
+
   const handleSave = () => {
-    const eventToEdit: Events = {
-      ...events,
-      name: formData.name,
-      description: formData.description,
-    };
-    // Call the editHandler to update the event
-    editHandler(eventToEdit);
-    closeModal();
+    if (selectedEvent) {
+      // Create a new event object with updated name and description
+      const updatedEvent: Events = {
+        ...selectedEvent,
+        name: formData.name,
+        description: formData.description,
+      };
+      // Call the editHandler to update the event
+      editHandler(updatedEvent);
+      closeModal();
+    }
   };
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
-  const [eventToDelete, setEventToDelete] = useState<Events | null>(null);
 
   const openDeleteConfirmation = (event: Events) => {
-    setEventToDelete(event);
+    setSelectedEvent(event);
     setIsDeleteConfirmationOpen(true);
   };
 
@@ -79,8 +87,8 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
   };
 
   const confirmDelete = () => {
-    if (eventToDelete) {
-      deleteHandler(eventToDelete);
+    if (selectedEvent) {
+      deleteHandler(selectedEvent);
       closeDeleteConfirmation();
     }
   };
@@ -101,21 +109,22 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow key={events.id}>
-                  <TableCell className="checkbox-cell">
-                    <Checkbox color="primary" />
-                  </TableCell>
-                  <TableCell>{events.name}</TableCell>
-                  <TableCell>{events.description}</TableCell>
-                  <TableCell>
-                    {" "}
-                    <ActionButtonGroup
-                      onEditClick={openModal}
-                      onDeleteClick={() => openDeleteConfirmation(events)}
-                      isActive={events.isActive}
-                    />
-                  </TableCell>
-                </TableRow>
+                {events.map((event) => (
+                  <TableRow key={event.id}>
+                    <TableCell className="checkbox-cell">
+                      <Checkbox color="primary" />
+                    </TableCell>
+                    <TableCell>{event.name}</TableCell>
+                    <TableCell>{event.description}</TableCell>
+                    <TableCell>
+                      <ActionButtonGroup
+                        onEditClick={() => openModal(event)}
+                        onDeleteClick={() => openDeleteConfirmation(event)}
+                        isActive={event.isActive}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
