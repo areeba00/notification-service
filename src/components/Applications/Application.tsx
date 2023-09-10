@@ -87,7 +87,7 @@ function Applications() {
 
   function calculateVisibleCards(): number {
     const screenWidth = window.innerWidth;
-    const cardWidth = 300;
+    const cardWidth = 240;
     return Math.floor(screenWidth / cardWidth);
   }
 
@@ -113,13 +113,13 @@ function Applications() {
             <BiSolidLeftArrow
               onClick={handlePrevious}
               disabled={isAtFirstCard}
-              className="TBS_arrow_button"
+              className="TBS_arrow_button_left"
             />
 
             <div className="TBS_slider">
               <div
                 className="TBS_card-wrapper"
-                style={{ transform: `translateX(-${currentIndex * 350}px)` }} // Adjust card width
+                style={{ transform: `translateX(-${currentIndex * 260}px)` }} // Adjust card width
               >
                 {applications.map((app, index) => (
                   <div
@@ -145,7 +145,7 @@ function Applications() {
             <BiSolidRightArrow
               onClick={handleNext}
               disabled={isAtLastCard}
-              className="TBS_arrow_button"
+              className="TBS_arrow_button_right"
             />
           </div>
         </div>

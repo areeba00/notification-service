@@ -150,9 +150,7 @@ Props) => {
             onConfirm={confirmDelete}
           />
         </div>
-        {/* <Grid events={associatedEvents} /> */}
       </article>
-      {/* <Events applicationId={selectedApplicationId} /> */}
     </>
   );
 };

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+// import React, { ChangeEvent, useState } from "react";
 import Paper from "@mui/material/Paper";
 import {
   Table,
@@ -11,39 +11,50 @@ import {
 } from "@mui/material";
 import "./Grid.css";
 import ActionButtonGroup from "../ActionButtonGroup/ActionButtonGroup";
-import DialogBox from "../EditDialogBox/DialogBox";
+import { ChangeEvent, useState } from "react";
 import DeleteDialog from "../DeleteDialog/DeleteDialog";
-import Notifications from "../../components/Notifications/Notifications";
+import NotificationDialog from "../NotificationDialog/NotificationDialog";
+// import ActionButtonGroup from "../ActionButtonGroup/ActionButtonGroup";
+// import DialogBox from "../EditDialogBox/DialogBox";
+// import DeleteDialog from "../DeleteDialog/DeleteDialog";
 
-interface Events {
+interface Notifications {
   id: number;
   name: string;
   description: string;
-  application_id: number;
+  event_id: number;
+  template_subject: string;
+  template_body: string;
   created_at: string;
   updated_at: string;
   isActive: boolean;
+  tags: string[];
 }
 interface Props {
-  events: Events[];
-  deleteHandler: (event: Events) => void;
-  editHandler: (event: Events) => void;
+  notifications: Notifications[];
+  deleteHandler: (notification: Notifications) => void;
+  editHandler: (notification: Notifications) => void;
 }
 
-const Grid = ({ events, deleteHandler, editHandler }: Props) => {
+const Grid1 = ({ notifications, deleteHandler, editHandler }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<Events | null>(null);
+  const [selectedNotification, setSelectedNotification] =
+    useState<Notifications | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    template_subject: "",
+    template_body: "",
   });
 
-  const openModal = (event: Events) => {
-    setSelectedEvent(event);
+  const openModal = (event: Notifications) => {
+    setSelectedNotification(event);
     setFormData({
       name: event.name,
       description: event.description,
+      template_subject: event.template_subject,
+      template_body: event.template_body,
     });
     setIsModalOpen(true);
   };
@@ -61,12 +72,14 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
   };
 
   const handleSave = () => {
-    if (selectedEvent) {
+    if (selectedNotification) {
       // Create a new event object with updated name and description
-      const updatedEvent: Events = {
-        ...selectedEvent,
+      const updatedEvent: Notifications = {
+        ...selectedNotification,
         name: formData.name,
         description: formData.description,
+        template_subject: formData.template_subject,
+        template_body: formData.template_body,
       };
       // Call the editHandler to update the event
       editHandler(updatedEvent);
@@ -77,8 +90,8 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
 
-  const openDeleteConfirmation = (event: Events) => {
-    setSelectedEvent(event);
+  const openDeleteConfirmation = (notification: Notifications) => {
+    setSelectedNotification(notification);
     setIsDeleteConfirmationOpen(true);
   };
 
@@ -87,21 +100,9 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
   };
 
   const confirmDelete = () => {
-    if (selectedEvent) {
-      deleteHandler(selectedEvent);
+    if (selectedNotification) {
+      deleteHandler(selectedNotification);
       closeDeleteConfirmation();
-    }
-  };
-
-  // checkbox click
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
-  // Handle checkbox click and store the selected event ID
-  const handleCheckboxClick = (eventId: number) => {
-    if (selectedEventId === eventId) {
-      // If the same event is clicked again, unselect it
-      setSelectedEventId(null);
-    } else {
-      setSelectedEventId(eventId);
     }
   };
 
@@ -121,22 +122,20 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {events.map((event) => (
-                  <TableRow key={event.id}>
+                {notifications.map((notification) => (
+                  <TableRow key={notification.id}>
                     <TableCell className="checkbox-cell">
-                      <Checkbox
-                        onClick={() => handleCheckboxClick(event.id)}
-                        color="primary"
-                        checked={selectedEventId === event.id}
-                      />
+                      <Checkbox color="primary" />
                     </TableCell>
-                    <TableCell>{event.name}</TableCell>
-                    <TableCell>{event.description}</TableCell>
+                    <TableCell>{notification.name}</TableCell>
+                    <TableCell>{notification.description}</TableCell>
                     <TableCell>
                       <ActionButtonGroup
-                        onEditClick={() => openModal(event)}
-                        onDeleteClick={() => openDeleteConfirmation(event)}
-                        isActive={event.isActive}
+                        onEditClick={() => openModal(notification)}
+                        onDeleteClick={() =>
+                          openDeleteConfirmation(notification)
+                        }
+                        isActive={notification.isActive}
                       />
                     </TableCell>
                   </TableRow>
@@ -148,7 +147,7 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
       </div>
 
       <div>
-        <DialogBox
+        <NotificationDialog
           open={isModalOpen}
           onClose={closeModal}
           formData={formData}
@@ -163,12 +162,8 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
           onConfirm={confirmDelete}
         />
       </div>
-
-      <div>
-        <Notifications eventId={selectedEventId} />
-      </div>
     </>
   );
 };
 
-export default Grid;
+export default Grid1;

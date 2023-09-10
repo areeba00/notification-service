@@ -1,0 +1,122 @@
+/* Update the font import */
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:600|Work+Sans:400,500,600,700&display=swap");
+
+/* Apply styles to the login container */
+#loginform {
+  width: 50%;
+  height: 30%;
+  margin: 30px;
+  padding: 30px;
+  background-color: #fcfcfc;
+  text-align: start;
+  overflow: visible;
+  justify-content: space-between;
+}
+
+/* Style the login header title */
+#login-headerTitle {
+  /* text-align: center; */
+  font-family: "open sans", sans-serif;
+  font-size: 1.3rem;
+  display: inline-block;
+  padding-left: 2.5rem;
+  margin-left: 220px;
+  color: gray;
+  margin-top: 15px;
+}
+
+/* Style input rows */
+.row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1rem; /* Adjust padding */
+  max-width: 100%;
+  justify-content: space-between;
+  margin-top: 20px;
+  flex: 1;
+}
+/*for input size*/
+.row input {
+  width: 80%;
+  box-sizing: border-box;
+  border: none;
+  font-size: 1.2rem;
+  box-shadow: inset 0px -3px 0px 0px rgba(187, 187, 187, 0.2);
+  transition: box-shadow 0.2s ease-in;
+}
+
+.row input:focus {
+  box-shadow: inset 0px -3px 0px 0px rgba(242, 242, 243, 0.7);
+  outline: none;
+}
+
+.row label {
+  align-self: flex-start;
+  margin: 0;
+  padding-left: 4.5rem;
+  padding-bottom: 0.5rem;
+  color: rgba(187, 187, 187, 0.9);
+}
+.row button {
+  border-radius: 20px;
+  width: 20%;
+  height: 40px;
+  font-size: 1.2rem;
+  color: white;
+  font-weight: 700;
+  background: rgb(34, 128, 48);
+  border: 0px;
+  cursor: pointer;
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.Cancel-button:hover {
+  opacity: 0.8;
+  transform: scale(1);
+}
+
+.row button:hover {
+  opacity: 0.8;
+  transform: scale(1);
+}
+
+#button {
+  padding-top: 2rem;
+  padding-bottom: 3.5rem;
+}
+
+.error {
+  color: red;
+}
+.errorr {
+  margin-left: 70px;
+}
+.row input {
+  border: 1px solid #bcb0b0;
+  border-radius: 20px;
+}
+.button.cancel-button {
+  padding-top: 20px;
+}
+.bodyyy {
+  margin-left: 60px;
+  align-items: center;
+  padding-top: 1rem;
+  width: 80%;
+}
+
+.body-preview {
+  flex-grow: 1;
+  flex: 1;
+  overflow: auto;
+  border: 1px solid #ccc;
+  padding: 70px;
+  box-sizing: border-box;
+  padding: 70px;
+  box-sizing: border-box;
+  margin-left: 35%;
+  margin-top: -80%;
+}

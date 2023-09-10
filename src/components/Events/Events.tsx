@@ -32,7 +32,6 @@ const Events = ({ applicationId }: EventsProps) => {
       apiClient
         .get<ApiResponse>(`/events?application_id=${applicationId}`)
         .then((response) => {
-          console.log("Fetched events:", response.data.events);
           setEvents(response.data.events);
         })
         .catch((error) => {
@@ -42,7 +41,6 @@ const Events = ({ applicationId }: EventsProps) => {
       apiClient
         .get<ApiResponse>("/events")
         .then((response) => {
-          console.log("Fetched all events:", response.data.events);
           setEvents(response.data.events);
         })
         .catch((error) => {
@@ -72,7 +70,7 @@ const Events = ({ applicationId }: EventsProps) => {
 
     // Send a PUT request to update the event on the server
     apiClient
-      .put(`/events/${updatedEvent.id}`, updatedEventData)
+      .patch(`/events/${updatedEvent.id}`, updatedEventData)
       .then((response) => {
         // Assuming the server returns the updated event data
         const updatedEvents = events.map((event) =>
