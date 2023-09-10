@@ -1,9 +1,8 @@
 import React from "react";
-import IconButton from "@mui/material/IconButton";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import RadioButtonCheckedRoundedIcon from "@mui/icons-material/RadioButtonCheckedRounded";
 import "./ActionButtonGroup.css";
+import { MdDelete } from "react-icons/md";
+import { FaPen } from "react-icons/fa";
+import { RiRadioButtonLine } from "react-icons/ri";
 
 interface ActionButtonGroupProps {
   onEditClick: () => void;
@@ -20,7 +19,7 @@ const ActionButtonGroup: React.FC<ActionButtonGroupProps> = ({
 }) => {
   return (
     <div className="custom-button-container">
-      <IconButton aria-label="edit" onClick={onEditClick} className="icon-button">
+      {/* <IconButton aria-label="edit" onClick={onEditClick} className="icon-button">
         <EditIcon style={{ color: "black" }} />
       </IconButton>
       <IconButton aria-label="delete" onClick={onDeleteClick} className="icon-button">
@@ -30,7 +29,21 @@ const ActionButtonGroup: React.FC<ActionButtonGroupProps> = ({
         <RadioButtonCheckedRoundedIcon
           style={{ color: isActive ? "green" : "primary" }}
         />
-      </IconButton>
+      </IconButton> */}
+      <FaPen
+        onClick={onEditClick}
+        className="icon-button"
+        style={{ color: "black" }}
+      />
+      <MdDelete
+        onClick={onDeleteClick}
+        className="icon-button"
+        style={{ color: "red" }}
+      />
+      <RiRadioButtonLine
+        className="icon-button"
+        style={{ color: isActive ? "green" : "primary" }}
+      />
     </div>
   );
 };

@@ -1,12 +1,9 @@
-import { useState, ChangeEvent, useEffect } from "react";
+import { useState, ChangeEvent } from "react";
 
 import "./Card.css";
 import ActionButtonGroup from "../../../common/ActionButtonGroup/ActionButtonGroup";
 import DialogBox from "../../../common/EditDialogBox/DialogBox";
 import DeleteDialog from "../../../common/DeleteDialog/DeleteDialog";
-import apiClient from "../../../apiService/api-client";
-import Grid from "../../../common/Grid/Grid";
-import Events from "../../Events/Events";
 
 interface Applications {
   id: number;
@@ -98,6 +95,7 @@ Props) => {
     closeModal();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedApplicationId, setSelectedApplicationId] = useState<
     number | null
   >(null);
@@ -113,31 +111,6 @@ Props) => {
       setSelectedApplicationId(null);
     }
   };
-  // Toggle card click
-  // const toggleCardClick = () => {
-  //   setIsCardClicked(!isCardClicked);
-  // };
-
-  // useEffect(() => {
-  //   if (isCardClicked) {
-  //     fetchEventsForApplication(applications.id);
-  //     console.log(applications.id);
-  //   }
-  // }, [isCardClicked, applications.id]);
-
-  // const fetchEventsForApplication = (applicationId: number) => {
-  //   // Make a GET request to fetch events for the specified application
-  //   apiClient
-  //     .get(`/events?application_id=${applicationId}`)
-  //     .then((response) => {
-  //       // Update the state with the fetched events
-  //       setAssociatedEvents(response.data.events);
-  //       console.log(response.data.events);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching events:", error);
-  //     });
-  // };
 
   return (
     <>
@@ -150,16 +123,16 @@ Props) => {
       >
         <div className="C-infos" key={applications.id}>
           <h2 className="C-title">{applications.name}</h2>
-          <p className="C-txt">
-            {/* {app.description} */} Lorem ipsum dolor sit, amet consectetur
-            adipisicing elit. Totam, voluptatum!
-          </p>
+          <p className="C-txt">{applications.description}</p>
 
-          <ActionButtonGroup
-            onEditClick={openModal}
-            onDeleteClick={() => openDeleteConfirmation(applications)}
-            isActive={applications.isActive}
-          />
+          <div className="mt-8">
+            {" "}
+            <ActionButtonGroup
+              onEditClick={openModal}
+              onDeleteClick={() => openDeleteConfirmation(applications)}
+              isActive={applications.isActive}
+            />
+          </div>
         </div>
         <div>
           <DialogBox

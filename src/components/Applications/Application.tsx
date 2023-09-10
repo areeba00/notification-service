@@ -6,6 +6,7 @@ import Cards from "./Card/Card";
 import { BiSolidRightArrow, BiSolidLeftArrow } from "react-icons/bi";
 import "./CardSlider/CardSlider.css";
 import Events from "../Events/Events";
+import TabBar from "../../common/TabBar/TabBar";
 
 interface Applications {
   id: number;
@@ -24,13 +25,18 @@ interface ApiResponse {
 function Applications() {
   const [applications, setApplications] = useState<Applications[]>([]);
 
-  const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(
-    null
-  );
+  const [selectedApplicationId, setSelectedApplicationId] = useState<
+    number | null
+  >(null);
+  // Add a state to control the visibility of events
+  const [showEvents, setShowEvents] = useState(false);
 
   const handleCardClick = (appId: number) => {
-    // Set the selected application ID
-    setSelectedApplicationId(appId);
+    // Toggle the display of events
+    setShowEvents(!showEvents);
+
+    // Set the selected application ID only if events are shown
+    setSelectedApplicationId(showEvents ? null : appId);
   };
 
   useEffect(() => {
@@ -101,49 +107,51 @@ function Applications() {
 
   return (
     <>
-    <div className="container-fluid">
-      <div className="row">
-        <div className="TBS_slider-container">
-          <BiSolidLeftArrow
-            onClick={handlePrevious}
-            disabled={isAtFirstCard}
-            className="TBS_arrow_button"
-          />
+      <div className="container-fluid">
+        <div className="row">
+          <div className="TBS_slider-container">
+            <BiSolidLeftArrow
+              onClick={handlePrevious}
+              disabled={isAtFirstCard}
+              className="TBS_arrow_button"
+            />
 
-          <div className="TBS_slider">
-            <div
-              className="TBS_card-wrapper"
-              style={{ transform: `translateX(-${currentIndex * 350}px)` }} // Adjust card width
-            >
-              {applications.map((app, index) => (
-                <div
-                  key={index}
-                  className={`TBS_slider-card ${
-                    index >= currentIndex && index < currentIndex + visibleCards
-                      ? "visible"
-                      : ""
-                  }`}
-                >
-                  <Cards
-                    applications={app}
-                    deleteHandler={deleteApplication}
-                    editHandler={editApplication}
-                    onClick={() => handleCardClick(app.id)}
-                  />
-                </div>
-              ))}
+            <div className="TBS_slider">
+              <div
+                className="TBS_card-wrapper"
+                style={{ transform: `translateX(-${currentIndex * 350}px)` }} // Adjust card width
+              >
+                {applications.map((app, index) => (
+                  <div
+                    key={index}
+                    className={`TBS_slider-card ${
+                      index >= currentIndex &&
+                      index < currentIndex + visibleCards
+                        ? "visible"
+                        : ""
+                    }`}
+                  >
+                    <Cards
+                      applications={app}
+                      deleteHandler={deleteApplication}
+                      editHandler={editApplication}
+                      onClick={() => handleCardClick(app.id)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <BiSolidRightArrow
-            onClick={handleNext}
-            disabled={isAtLastCard}
-            className="TBS_arrow_button"
-          />
+            <BiSolidRightArrow
+              onClick={handleNext}
+              disabled={isAtLastCard}
+              className="TBS_arrow_button"
+            />
+          </div>
         </div>
       </div>
-    </div>
-    <Events applicationId={selectedApplicationId} />
+      <TabBar title={"EVENTS"} />
+      <Events applicationId={selectedApplicationId} />
     </>
   );
 }
