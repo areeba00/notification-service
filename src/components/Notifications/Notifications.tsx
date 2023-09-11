@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import apiClient from "../../apiService/api-client";
 import Grid1 from "../../common/Grid/Grid1";
+import TabBar from "../../common/TabBar/TabBar";
 // ... other imports ...
 
 interface Notifications {
@@ -105,8 +106,36 @@ const Notifications = ({ eventId }: NotificationProps) => {
       });
   };
 
+  // add dialog
+  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+  });
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleAddClick = () => {
+    setAddDialogOpen(true);
+  };
+
+  const handleCloseAddDialog = () => {
+    setAddDialogOpen(false);
+    // Reset the form data to empty fields
+    setFormData({
+      name: "",
+      description: "",
+    });
+  };
+
   return (
     <>
+      <TabBar title={"Notifications"} onAddClick={handleAddClick} />
       <Grid1
         notifications={notifications}
         editHandler={editNotification}

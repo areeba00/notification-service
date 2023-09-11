@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import apiClient from "../../apiService/api-client";
 import Grid from "../../common/Grid/Grid";
+import TabBar from "../../common/TabBar/TabBar";
+import AddDialog from "../../common/AddDialog/AddDialog";
 // ... other imports ...
 
 interface Events {
@@ -83,12 +85,68 @@ const Events = ({ applicationId }: EventsProps) => {
       });
   };
 
+  // add event functionality
+
+  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+  });
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleAddClick = () => {
+    setAddDialogOpen(true);
+  };
+
+  const handleCloseAddDialog = () => {
+    setAddDialogOpen(false);
+    // Reset the form data to empty fields
+    setFormData({
+      name: "",
+      description: "",
+    });
+  };
+
+  const handleAddEvent = (newEvent: { name: string; description: string }) => {
+    const eventDataWithAppId = {
+      ...newEvent,
+      application_id: applicationId,
+    };
+    // Make a POST request to add the new application
+    apiClient
+      .post("/events", eventDataWithAppId)
+      .then((response) => {
+        // Assuming the server returns the added application data
+        const addedEvent = response.data;
+        setEvents([...events, addedEvent]);
+        handleCloseAddDialog();
+      })
+      .catch((error) => {
+        console.error("Error adding event:", error);
+      });
+  };
+
   return (
     <>
+      <TabBar title={"Events"} onAddClick={handleAddClick} />
       <Grid
         events={events}
         deleteHandler={deleteEvent}
         editHandler={editEvent}
+      />
+      <AddDialog
+        open={isAddDialogOpen}
+        onClose={handleCloseAddDialog}
+        formData={formData}
+        handleInputChange={handleInputChange}
+        handleAdd={handleAddEvent}
+        title="Add Event"
       />
     </>
   );

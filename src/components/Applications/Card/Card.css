@@ -40,6 +40,9 @@ article.card {
   background-color: rgb(255, 253, 253) !important;
 }
 
+article.card.clicked {
+  background-color: rgb(151, 25, 25);
+}
 article.card .C-infos {
   margin-top: 10px;
   margin-bottom: 10px;

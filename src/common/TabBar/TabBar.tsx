@@ -1,9 +1,11 @@
+import React from "react";
 import IconButton from "@mui/material/IconButton";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import "./TabBar.css";
 
 interface Props {
   title: string;
+  onAddClick: () => void; // Callback function for handling add button click
 }
 
 const TabBar = (props: Props) => {
@@ -11,6 +13,7 @@ const TabBar = (props: Props) => {
     fontSize: "30px", // Set the font size
     color: "white",
   };
+
   return (
     <nav className="navbar tabbar-custom">
       <div className="container">
@@ -27,10 +30,7 @@ const TabBar = (props: Props) => {
             placeholder="Search"
             aria-label="Search"
           />
-          {/* <button className="btn btn-outline-success" type="submit">
-            Search
-          </button> */}
-          <IconButton style={iconStyle}>
+          <IconButton style={iconStyle} onClick={props.onAddClick}>
             <AddCircleOutlineIcon />
           </IconButton>
         </form>

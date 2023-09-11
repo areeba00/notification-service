@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ChangeEvent } from "react";
 import apiClient from "../../apiService/api-client";
 import { useEffect, useState } from "react";
 import "./Application.css";
@@ -7,6 +7,7 @@ import { BiSolidRightArrow, BiSolidLeftArrow } from "react-icons/bi";
 import "./CardSlider/CardSlider.css";
 import Events from "../Events/Events";
 import TabBar from "../../common/TabBar/TabBar";
+import AddDialog from "../../common/AddDialog/AddDialog";
 
 interface Applications {
   id: number;
@@ -105,8 +106,55 @@ function Applications() {
   const isAtFirstCard = currentIndex === 0;
   const isAtLastCard = currentIndex === applications.length - 1;
 
+  // add application functionality
+
+  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+  });
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleAddClick = () => {
+    setAddDialogOpen(true);
+  };
+
+  const handleCloseAddDialog = () => {
+    setAddDialogOpen(false);
+    // Reset the form data to empty fields
+    setFormData({
+      name: "",
+      description: "",
+    });
+  };
+
+  const handleAddApplication = (newApplication: {
+    name: string;
+    description: string;
+  }) => {
+    // Make a POST request to add the new application
+    apiClient
+      .post("/applications", newApplication)
+      .then((response) => {
+        // Assuming the server returns the added application data
+        const addedApp = response.data;
+        setApplications([...applications, addedApp]);
+        handleCloseAddDialog();
+      })
+      .catch((error) => {
+        console.error("Error adding application:", error);
+      });
+  };
+
   return (
     <>
+      <TabBar title={"APPLICATIONS"} onAddClick={handleAddClick} />
       <div className="container-fluid">
         <div className="row">
           <div className="TBS_slider-container">
@@ -150,7 +198,14 @@ function Applications() {
           </div>
         </div>
       </div>
-      <TabBar title={"EVENTS"} />
+      <AddDialog
+        open={isAddDialogOpen}
+        onClose={handleCloseAddDialog}
+        formData={formData}
+        handleInputChange={handleInputChange}
+        handleAdd={handleAddApplication}
+        title="Add Application"
+      />
       <Events applicationId={selectedApplicationId} />
     </>
   );
