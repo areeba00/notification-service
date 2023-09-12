@@ -83,7 +83,7 @@ const Notifications = ({ eventId }: NotificationProps) => {
       description: updatedNotification.description,
       template_subject: updatedNotification.template_subject,
       template_body: updatedNotification.template_body,
-      event_id: updatedNotification.event_id, // Include the applicationId from props
+      event_id: updatedNotification.event_id,
     };
 
     // Send a PUT request to update the event on the server

@@ -1,8 +1,7 @@
-// Import necessary components and libraries
-import React, { useState } from "react";
-import { useParams } from "react-router-dom"; // Import useParams to get the notification ID
-import NotificationDialog from "../../common/NotificationDialog/NotificationDialog";
-// ... other imports ...
+import React, { useState, useEffect, ChangeEvent } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios"; // You can use Axios for making HTTP requests
+
 
 interface Notifications {
     id: number;
@@ -16,13 +15,16 @@ interface Notifications {
     isActive: boolean;
     tags: string[];
   }
+  
+  interface ApiResponse {
+    TotalCount: string;
+    notifications: Notifications[];
+  }
+
+  
 const EditNotificationPage = () => {
-  const { notificationId } = useParams(); 
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedNotification, setSelectedNotification] =
-    useState<Notifications | null>(null);
-
+  const { notificationId } = useParams(); // Get the notification ID from URL parameter
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -30,19 +32,36 @@ const EditNotificationPage = () => {
     template_body: "",
   });
 
-  const openModal = (event: Notifications) => {
-    setSelectedNotification(event);
-    setFormData({
-      name: event.name,
-      description: event.description,
-      template_subject: event.template_subject,
-      template_body: event.template_body,
-    });
-    setIsModalOpen(true);
-  };
+  useEffect(() => {
+    // Fetch the current notification data using the notificationId
+    axios
+      .get(`/api/notifications/${notificationId}`)
+      .then((response) => {
+        const notificationData = response.data;
+        setFormData({
+          name: notificationData.name,
+          description: notificationData.description,
+          template_subject: notificationData.template_subject,
+          template_body: notificationData.template_body,
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching notification data:", error);
+      });
+  }, [notificationId]);
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  const handleFormSubmit = (event: ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    // Send a PATCH request with the updated data
+    axios
+      .patch(`/api/notifications/${notificationId}`, formData)
+      .then((response) => {
+        console.log("Notification updated successfully!");
+        // You can navigate back to the list or perform any other action here
+      })
+      .catch((error) => {
+        console.error("Error updating notification:", error);
+      });
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -53,32 +72,22 @@ const EditNotificationPage = () => {
     });
   };
 
-  const handleSave = () => {
-    if (selectedNotification) {
-      // Create a new event object with updated name and description
-      const updatedEvent: Notifications = {
-        ...selectedNotification,
-        name: formData.name,
-        description: formData.description,
-        template_subject: formData.template_subject,
-        template_body: formData.template_body,
-      };
-      // Call the editHandler to update the event
-      editHandler(updatedEvent);
-      closeModal();
-    }
-  };
-
   return (
     <div>
       <h1>Edit Notification</h1>
-      <NotificationDialog
-          open={isModalOpen}
-          onClose={closeModal}
-          formData={formData}
-          handleInputChange={handleInputChange}
-          handleSave={handleSave}
-        />
+      <form onSubmit={handleFormSubmit}>
+        <div>
+          <label>Name:</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleInputChange}
+          />
+        </div>
+        {/* Repeat similar input fields for description, template_subject, and template_body */}
+        <button type="submit">Save</button>
+      </form>
     </div>
   );
 };

@@ -71,7 +71,7 @@ const Grid1 = ({ notifications, deleteHandler, editHandler }: Props) => {
   const handleSave = () => {
     if (selectedNotification) {
       // Create a new event object with updated name and description
-      const updatedEvent: Notifications = {
+      const updatedNotification: Notifications = {
         ...selectedNotification,
         name: formData.name,
         description: formData.description,
@@ -79,7 +79,7 @@ const Grid1 = ({ notifications, deleteHandler, editHandler }: Props) => {
         template_body: formData.template_body,
       };
       // Call the editHandler to update the event
-      editHandler(updatedEvent);
+      editHandler(updatedNotification);
       closeModal();
     }
   };

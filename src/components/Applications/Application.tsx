@@ -41,9 +41,10 @@ function Applications() {
   };
 
   useEffect(() => {
-    apiClient
-      .get<ApiResponse>("/applications")
-      .then((res) => setApplications(res.data.applications));
+    apiClient.get<ApiResponse>("/applications").then((res) => {
+      setApplications(res.data.applications);
+      setfiltered_Applications(res.data.applications);
+    });
   }, []);
 
   const deleteApplication = (application: Applications) => {
@@ -152,9 +153,30 @@ function Applications() {
       });
   };
 
+  // FILTERING APPLICATIONS
+  const [filtered_Applications, setfiltered_Applications] = useState<
+    Applications[]
+  >([]);
+
+  function filterObjectsByName(searchString: string): Applications[] {
+    setfiltered_Applications(
+      applications.filter((apps) => {
+        const name = apps.name.toLowerCase();
+        searchString = searchString.toLowerCase();
+        return name.includes(searchString);
+      })
+    );
+
+    return filtered_Applications;
+  }
+
   return (
     <>
-      <TabBar title={"APPLICATIONS"} onAddClick={handleAddClick} />
+      <TabBar
+        title={"APPLICATIONS"}
+        onAddClick={handleAddClick}
+        submitFunction={filterObjectsByName}
+      />
       <div className="container-fluid">
         <div className="row">
           <div className="TBS_slider-container">
@@ -169,7 +191,7 @@ function Applications() {
                 className="TBS_card-wrapper"
                 style={{ transform: `translateX(-${currentIndex * 260}px)` }} // Adjust card width
               >
-                {applications.map((app, index) => (
+                {filtered_Applications.map((app, index) => (
                   <div
                     key={index}
                     className={`TBS_slider-card ${
