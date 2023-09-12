@@ -1,6 +1,6 @@
 .card {
   width: 100%; /* Adjust the width as needed */
-  background-color: #913030; /* Grey background color */
+  /* background-color: #913030;  */
   border-radius: 10px; /* Rounded corners */
   padding: 10px; /* Add padding for spacing */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Add a subtle box shadow */
@@ -31,4 +31,3 @@
   height: 100%;
   z-index: 1300; /* Ensure the backdrop is above other elements */
 }
-

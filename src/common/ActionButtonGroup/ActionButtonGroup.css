@@ -1,22 +1,27 @@
 .custom-button-container {
-  /* background-color: lightgrey; */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
+  /* background-image: linear-gradient(to bottom right, rgba(128, 128, 128, 0.331),rgb(107, 106, 106)); */
+  background-color: rgba(128, 128, 128, 0.208);
+  width: 170px;
+  border-radius: 15px;
+  outline: outset 4px gray;
 }
 
-.custom-button-container button {
-  background-color: transparent; /* Remove the background color for buttons */
-  border: none; /* Remove any borders */
+.icon-button {
+  /* background-color: transparent; */
   cursor: pointer;
-  margin: 0;
+  margin: 10px 10px 10px 10px;
   padding: 0;
+  margin-left: 20px;
+  margin-right: 20px;
+  transform: scale(1.2);
 }
 
 .custom-button-container button:hover {
   background-color: transparent; /* Set the background color on hover (if needed) */
 }
 .custom-button-container .icon-button:hover {
-  transform: scale(1.1); /* Change the background color on hover */
+  transform: scale(1.4); /* Change the background color on hover */
 }

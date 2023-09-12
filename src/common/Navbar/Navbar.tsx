@@ -1,19 +1,26 @@
 import IconButton from "@mui/material/IconButton";
 import Avatar from "@mui/material/Avatar";
 import img from "../../images/gosaas.png";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import SettingsIcon from "@mui/icons-material/Settings";
 import "./Navbar.css";
 
 function Navbar() {
   return (
     <nav className="navbar navbar-light custom-navbar">
-      <a className="navbar-brand" href="#">
-        <img src={img} className=" navbar-logo" alt="" />
-      </a>
-      {/* <div className="user-icon">
+      <div>
+        <a className="navbar-brand" href="#">
+          <img
+            src={img}
+            className=" navbar-logo"
+            alt=""
+            style={{ marginBottom: "50px" }}
+          />
+        </a>
+      </div>
+      {/* <div className="icon-button">
         <IconButton aria-label="user-profile">
           <Avatar>
-            <AccountCircleIcon />
+            <SettingsIcon style={{ color: "black", marginBottom: "50px" }} />
           </Avatar>
         </IconButton>
       </div> */}

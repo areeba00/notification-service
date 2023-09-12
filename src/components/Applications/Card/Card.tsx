@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 
 import "./Card.css";
 import ActionButtonGroup from "../../../common/ActionButtonGroup/ActionButtonGroup";
@@ -15,18 +15,32 @@ interface Applications {
 }
 
 interface Props {
+  clicked_id: number;
+  card_id: number;
   applications: Applications;
   deleteHandler: (application: Applications) => void;
+  editHandler: (editedApplication: Applications) => void;
+  onClick: () => void;
+  // gridComponent: React.ComponentType<{ events: Events[] }>;
 }
 
-const Cards = ({ applications, deleteHandler }: Props) => {
+const Cards = ({
+  clicked_id,
+  card_id,
+  applications,
+  deleteHandler,
+  editHandler,
+  onClick,
+}: // gridComponent: Grid,
+Props) => {
   //delete things
-
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
-
   const [applicationToDelete, setApplicationToDelete] =
     useState<Applications | null>(null);
+
+  // Clicked state for the card
+  const [isCardClicked, setIsCardClicked] = useState(false);
 
   // Function to open the delete confirmation dialog
   const openDeleteConfirmation = (application: Applications) => {
@@ -34,6 +48,11 @@ const Cards = ({ applications, deleteHandler }: Props) => {
     setIsDeleteConfirmationOpen(true);
   };
 
+  useEffect(() => {
+    if (clicked_id !== card_id) {
+      setIsCardClicked(false);
+    }
+  },[clicked_id, card_id]);
   // Function to close the delete confirmation dialog
   const closeDeleteConfirmation = () => {
     setIsDeleteConfirmationOpen(false);
@@ -49,11 +68,14 @@ const Cards = ({ applications, deleteHandler }: Props) => {
   };
 
   // edit things
+
+  // const [associatedEvents, setAssociatedEvents] = useState<Events[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
+
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -61,6 +83,7 @@ const Cards = ({ applications, deleteHandler }: Props) => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData({
@@ -70,42 +93,76 @@ const Cards = ({ applications, deleteHandler }: Props) => {
   };
 
   const handleSave = () => {
+    const editedApplication: Applications = {
+      ...applications,
+      name: formData.name,
+      description: formData.description,
+    };
+
+    // Call the editHandler to update the application
+    editHandler(editedApplication);
     closeModal();
   };
 
-  return (
-    <article className="card">
-      <div className="C-infos" key={applications.id}>
-        <h2 className="C-title">{applications.name}</h2>
-        <p className="C-txt">
-          {/* {app.description} */} Lorem ipsum dolor sit, amet consectetur
-          adipisicing elit. Totam, voluptatum!
-        </p>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [selectedApplicationId, setSelectedApplicationId] = useState<
+    number | null
+  >(null);
 
-        <ActionButtonGroup
-          onEditClick={openModal}
-          onDeleteClick={() => openDeleteConfirmation(applications)}
-          // onToggleClick={() => toggleApplication(app)}
-          isActive={applications.isActive}
-        />
-      </div>
-      <div>
-        <DialogBox
-          open={isModalOpen}
-          onClose={closeModal}
-          formData={formData}
-          handleInputChange={handleInputChange}
-          handleSave={handleSave}
-        />
-      </div>
-      <div>
-        <DeleteDialog
-          open={isDeleteConfirmationOpen}
-          onClose={closeDeleteConfirmation}
-          onConfirm={confirmDelete}
-        />
-      </div>
-    </article>
+  const handleCardClick = () => {
+    // Toggle the card clicked state
+    setIsCardClicked((prevIsCardClicked) => !prevIsCardClicked);
+
+    // If the card is clicked, set the selected application ID; otherwise, clear it
+    if (!isCardClicked) {
+      setSelectedApplicationId(applications.id);
+    } else {
+      setSelectedApplicationId(null);
+    }
+  };
+
+  return (
+    <>
+      <article
+        className={`card ${isCardClicked ? "clicked" : ""}`}
+        onClick={() => {
+          onClick(); // Call the onClick prop to handle card click
+          handleCardClick(); // You can also keep this if needed
+        }}
+      >
+        <div className="C-infos" key={applications.id}>
+          <div className="C-text-data">
+            <h2 className="C-title">{applications.name}</h2>
+            <p className="C-txt">{applications.description}</p>
+          </div>
+
+          {/* <div className="mt-8">
+            {" "} */}
+            <ActionButtonGroup
+              onEditClick={openModal}
+              onDeleteClick={() => openDeleteConfirmation(applications)}
+              isActive={applications.isActive}
+            />
+          {/* </div> */}
+        </div>
+        <div>
+          <DialogBox
+            open={isModalOpen}
+            onClose={closeModal}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSave={handleSave}
+          />
+        </div>
+        <div>
+          <DeleteDialog
+            open={isDeleteConfirmationOpen}
+            onClose={closeDeleteConfirmation}
+            onConfirm={confirmDelete}
+          />
+        </div>
+      </article>
+    </>
   );
 };
 

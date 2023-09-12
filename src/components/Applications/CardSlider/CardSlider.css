@@ -3,6 +3,7 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  flex-wrap: nowrap;
 }
 
 .TBS_slider {
@@ -28,44 +29,47 @@
   margin-top: 15px;
 } */
 
+.TBS_slider-card {
+  opacity: 0.3;
+  transition: 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
 .TBS_slider-card.visible {
   opacity: 1;
 }
 
-.TBS_arrow_button {
+.TBS_arrow_button_right,
+.TBS_arrow_button_left {
   transform: scale(10);
-  margin-left: 40px;
-  margin-right: 40px;
 }
 
-.TBS_arrow_button:hover {
-  transform: scale(7);
+@media (min-width: 768px) {
+  .TBS_arrow_button_right,
+  .TBS_arrow_button_left {
+    transform: scale(10);
+    margin-left: 40px;
+    margin-right: 40px;
+  }
 }
 
 @media (max-width: 768px) {
-  .TBS_slider-card {
-    flex: 0 0 200px; /* Adjust card width */
-    height: 400px; /* Adjust card height */
+  .TBS_slider-container {
+    transform: scale(1);
+    margin-right: -20px;
+    padding: 0px;
+  }
+
+  .TBS_arrow_button {
+    width: 60px;
+    height: 60px;
+  }
+  .TBS_arrow_button_left {
+    transform: scale(20);
+    margin-left: 7px;
     margin-right: 20px;
   }
-
-  .TBS_slider-container {
-    order: 2;
-    display: flex;
-    flex-wrap: wrap;
-    flex-basis: 100%;
-    transform: scale(0.8);
-  }
-
-  .TBS_prev-button,
-  .TBS_next-button {
-    display: inline-block;
-    order: 1;
-    width: 40%;
-    height: 40px;
-    /* margin-top: 300px; */
-  }
-  .TBS_gr_button {
-    transform: scale(1.5);
+  .TBS_arrow_button_right {
+    transform: scale(20);
+    margin-right: 7px;
+    margin-left: 20px;
   }
 }

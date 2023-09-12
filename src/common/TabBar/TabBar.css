@@ -9,11 +9,28 @@
 /* Add top padding */
 .navbar-brand {
   padding-top: 10px;
-  /* font-size: 50px; Adjust the value as needed */
 }
 .button {
   font-size: 50px;
   color: rgb(255, 255, 255);
   margin-left: 30px;
   /* Add other icon styles here */
+}
+
+.Search-button {
+  background-color: transparent;
+  border: None;
+}
+.Search-button :hover {
+  transform: scale(1.3);
+  color: rgba(0, 230, 0, 0.658);
+}
+
+.Search-icon {
+  font-size: 30px;
+  color: rgb(199, 198, 198);
+}
+
+.Search-icon :hover {
+  transform: scale(1);
 }
