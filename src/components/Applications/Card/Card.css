@@ -37,12 +37,19 @@ article.card {
   width: 100%;
   height: 1000px; /* Height of the colored strip */
   /* background-image: linear-gradient(to bottom right, red,#264552); */
-  background-color: rgb(255, 253, 253) !important;
+  background-color: rgb(255, 253, 253);
 }
 
-article.card.clicked {
-  background-color: rgb(151, 25, 25);
+.card.clicked::before {
+  background-color: rgb(92, 88, 88) !important;
+  outline: 3px solid thick black;
 }
+
+.card.clicked {
+  transform: scale(1.05);
+  box-shadow: 20px 20px 30px rgba(0, 0, 0, 0.2);
+}
+
 article.card .C-infos {
   margin-top: 10px;
   margin-bottom: 10px;
@@ -73,20 +80,15 @@ article.card .C-infos .C-title {
   text-shadow: 0 0 0px #32577f;
 }
 
-article.card .txt {
-  font-family: "Merriweather", sans-serif;
-  /* line-height: 2; */
-  font-size: 0.95rem;
-  color: rgba(21, 37, 54, 0.7);
-  opacity: 0;
-  transition: 0.5s 0.25s cubic-bezier(0.17, 0.67, 0.5, 1.03);
+article.card .C-text-data {
+  height: 145px;
 }
 
-article.card:hover .C-infos .seats,
-article.card:hover .C-infos .txt,
+/* article.card:hover .C-infos .seats,
+article.card:hover .C-infos .C-txt,
 article.card:hover .C-infos .edit_options {
   opacity: 1;
-}
+} */
 
 .TB-radio-button {
   width: 35px;
@@ -105,4 +107,8 @@ article.card .C-infos .seats {
   font-family: "Grotesque", sans-serif;
   padding-bottom: 10px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.mt-8 {
+  margin-bottom: 0px;
 }

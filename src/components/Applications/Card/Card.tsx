@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from "react";
+import { useState, ChangeEvent, useEffect } from "react";
 
 import "./Card.css";
 import ActionButtonGroup from "../../../common/ActionButtonGroup/ActionButtonGroup";
@@ -15,6 +15,8 @@ interface Applications {
 }
 
 interface Props {
+  clicked_id: number;
+  card_id: number;
   applications: Applications;
   deleteHandler: (application: Applications) => void;
   editHandler: (editedApplication: Applications) => void;
@@ -23,6 +25,8 @@ interface Props {
 }
 
 const Cards = ({
+  clicked_id,
+  card_id,
   applications,
   deleteHandler,
   editHandler,
@@ -44,6 +48,11 @@ Props) => {
     setIsDeleteConfirmationOpen(true);
   };
 
+  useEffect(() => {
+    if (clicked_id !== card_id) {
+      setIsCardClicked(false);
+    }
+  },[clicked_id, card_id]);
   // Function to close the delete confirmation dialog
   const closeDeleteConfirmation = () => {
     setIsDeleteConfirmationOpen(false);
@@ -122,17 +131,19 @@ Props) => {
         }}
       >
         <div className="C-infos" key={applications.id}>
-          <h2 className="C-title">{applications.name}</h2>
-          <p className="C-txt">{applications.description}</p>
+          <div className="C-text-data">
+            <h2 className="C-title">{applications.name}</h2>
+            <p className="C-txt">{applications.description}</p>
+          </div>
 
-          <div className="mt-8">
-            {" "}
+          {/* <div className="mt-8">
+            {" "} */}
             <ActionButtonGroup
               onEditClick={openModal}
               onDeleteClick={() => openDeleteConfirmation(applications)}
               isActive={applications.isActive}
             />
-          </div>
+          {/* </div> */}
         </div>
         <div>
           <DialogBox

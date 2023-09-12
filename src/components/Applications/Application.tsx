@@ -32,8 +32,11 @@ function Applications() {
   // Add a state to control the visibility of events
   const [showEvents, setShowEvents] = useState(false);
 
+  const [clikcedCardID, setClickedCardID] = useState<number>(0);
+
   const handleCardClick = (appId: number) => {
     // Toggle the display of events
+    setClickedCardID(appId);
     setShowEvents(!showEvents);
 
     // Set the selected application ID only if events are shown
@@ -41,10 +44,16 @@ function Applications() {
   };
 
   useEffect(() => {
-    apiClient.get<ApiResponse>("/applications").then((res) => {
-      setApplications(res.data.applications);
-      setfiltered_Applications(res.data.applications);
-    });
+    apiClient
+      .get<ApiResponse>("/applications")
+      .then((res) => {
+        setApplications(res.data.applications);
+        setfiltered_Applications(res.data.applications);
+      })
+      .catch((error) => {
+        // Handle any error that may occur during the API request
+        console.error("Error fetching data:", error);
+      });
   }, []);
 
   const deleteApplication = (application: Applications) => {
@@ -202,6 +211,8 @@ function Applications() {
                     }`}
                   >
                     <Cards
+                      clicked_id={clikcedCardID}
+                      card_id={app.id}
                       applications={app}
                       deleteHandler={deleteApplication}
                       editHandler={editApplication}

@@ -4,6 +4,8 @@ import apiClient from "../../apiService/api-client";
 import Grid from "../../common/Grid/Grid";
 import TabBar from "../../common/TabBar/TabBar";
 import AddDialog from "../../common/AddDialog/AddDialog";
+import CommonGrid from "../../common/Grid/CommonGrid";
+import Notifications from "../Notifications/Notifications";
 // ... other imports ...
 
 interface Events {
@@ -26,6 +28,7 @@ interface EventsProps {
 
 const Events = ({ applicationId }: EventsProps) => {
   const [events, setEvents] = useState<Events[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null); // Step 1
 
   // Fetch events when the selected application ID changes
   useEffect(() => {
@@ -132,13 +135,19 @@ const Events = ({ applicationId }: EventsProps) => {
       });
   };
 
+  // Step 2: Handle checkbox click
+  const handleCheckboxClick = (eventId: number) => {
+    setSelectedEventId(eventId); // Update the selected event ID state
+  };
   return (
     <>
       <TabBar title={"Events"} onAddClick={handleAddClick} />
-      <Grid
-        events={events}
+      <CommonGrid
+        items={events}
         deleteHandler={deleteEvent}
         editHandler={editEvent}
+        itemType="event"
+        onCheckboxClick={handleCheckboxClick}
       />
       <AddDialog
         open={isAddDialogOpen}
@@ -148,6 +157,8 @@ const Events = ({ applicationId }: EventsProps) => {
         handleAdd={handleAddEvent}
         title="Add Event"
       />
+
+      <Notifications eventId={selectedEventId} />
     </>
   );
 };

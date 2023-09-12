@@ -3,6 +3,7 @@ import React, { useState, useEffect, ChangeEvent } from "react";
 import apiClient from "../../apiService/api-client";
 import Grid1 from "../../common/Grid/Grid1";
 import TabBar from "../../common/TabBar/TabBar";
+import CommonGrid from "../../common/Grid/CommonGrid";
 // ... other imports ...
 
 interface Notifications {
@@ -136,10 +137,11 @@ const Notifications = ({ eventId }: NotificationProps) => {
   return (
     <>
       <TabBar title={"Notifications"} onAddClick={handleAddClick} />
-      <Grid1
-        notifications={notifications}
+      <CommonGrid
+        items={notifications}
         editHandler={editNotification}
         deleteHandler={deleteNotification}
+        itemType="notification"
       />
     </>
   );
