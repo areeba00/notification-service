@@ -19,17 +19,6 @@ const ActionButtonGroup: React.FC<ActionButtonGroupProps> = ({
 }) => {
   return (
     <div className="custom-button-container">
-      {/* <IconButton aria-label="edit" onClick={onEditClick} className="icon-button">
-        <EditIcon style={{ color: "black" }} />
-      </IconButton>
-      <IconButton aria-label="delete" onClick={onDeleteClick} className="icon-button">
-        <DeleteIcon style={{ color: "red" }} />
-      </IconButton>
-      <IconButton aria-label="toggle" className="icon-button">
-        <RadioButtonCheckedRoundedIcon
-          style={{ color: isActive ? "green" : "primary" }}
-        />
-      </IconButton> */}
       <FaPen
         onClick={onEditClick}
         className="icon-button"

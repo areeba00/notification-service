@@ -1,30 +1,29 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios"; // You can use Axios for making HTTP requests
-
+import apiClient from "../../apiService/api-client";
 
 interface Notifications {
-    id: number;
-    name: string;
-    description: string;
-    event_id: number;
-    template_subject: string;
-    template_body: string;
-    created_at: string;
-    updated_at: string;
-    isActive: boolean;
-    tags: string[];
-  }
-  
-  interface ApiResponse {
-    TotalCount: string;
-    notifications: Notifications[];
-  }
+  id: number;
+  name: string;
+  description: string;
+  event_id: number;
+  template_subject: string;
+  template_body: string;
+  created_at: string;
+  updated_at: string;
+  isActive: boolean;
+  tags: string[];
+}
 
-  
+interface ApiResponse {
+  TotalCount: string;
+  notifications: Notifications[];
+}
+
 const EditNotificationPage = () => {
-
   const { notificationId } = useParams(); // Get the notification ID from URL parameter
+  console.log(notificationId);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -34,10 +33,11 @@ const EditNotificationPage = () => {
 
   useEffect(() => {
     // Fetch the current notification data using the notificationId
-    axios
-      .get(`/api/notifications/${notificationId}`)
+    apiClient
+      .get<Notifications>(`/notifications/${notificationId}`)
       .then((response) => {
         const notificationData = response.data;
+        console.log(notificationData);
         setFormData({
           name: notificationData.name,
           description: notificationData.description,
@@ -50,7 +50,7 @@ const EditNotificationPage = () => {
       });
   }, [notificationId]);
 
-  const handleFormSubmit = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFormSubmit = (event: { preventDefault: () => void }) => {
     event.preventDefault();
     // Send a PATCH request with the updated data
     axios

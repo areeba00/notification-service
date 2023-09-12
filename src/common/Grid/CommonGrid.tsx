@@ -13,6 +13,8 @@ import ActionButtonGroup from "../ActionButtonGroup/ActionButtonGroup";
 import DialogBox from "../EditDialogBox/DialogBox";
 import DeleteDialog from "../DeleteDialog/DeleteDialog";
 import "./Grid.css";
+import NotificationDialog from "../NotificationDialog/NotificationDialog";
+import { useNavigate } from "react-router-dom";
 
 interface CommonItem {
   id: number;
@@ -42,6 +44,7 @@ const CommonGrid = <T extends CommonItem>({
   itemType,
   onCheckboxClick,
 }: Props<T>) => {
+  const navigate = useNavigate();
   console.log(items);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<T | null>(null);
@@ -49,6 +52,10 @@ const CommonGrid = <T extends CommonItem>({
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    ...(itemType === "notification" && {
+      template_subject: "",
+      template_body: "",
+    }),
   });
 
   const openModal = (item: T) => {
@@ -56,6 +63,10 @@ const CommonGrid = <T extends CommonItem>({
     setFormData({
       name: item.name,
       description: item.description,
+      ...(itemType === "notification" && {
+        template_subject: item.template_subject || "",
+        template_body: item.template_body || "",
+      }),
     });
     setIsModalOpen(true);
   };
@@ -78,6 +89,10 @@ const CommonGrid = <T extends CommonItem>({
         ...selectedItem,
         name: formData.name,
         description: formData.description,
+        ...(itemType === "notification" && {
+          template_subject: formData.template_subject,
+          template_body: formData.template_body,
+        }),
       };
       editHandler(updatedItem);
       closeModal();
@@ -106,13 +121,21 @@ const CommonGrid = <T extends CommonItem>({
   const [selectedItems, setSelectedItems] = useState<number | null>(null);
 
   const handleCheckboxClick = (itemId: number) => {
-    // onCheckboxClick(itemId);
     if (selectedItems === itemId) {
-      // If the same event is clicked again, unselect it
+      // If the same event is clicked again, unselect it and show all notifications
       setSelectedItems(null);
+      onCheckboxClick(null); // Pass null to indicate showing all notifications
     } else {
       setSelectedItems(itemId);
+      onCheckboxClick(itemId);
     }
+  };
+
+  const handleEditNotification = (notificationId: number) => {
+    // Construct the URL for editing the notification
+    const editNotificationUrl = `/notifications/${notificationId}`;
+    // Navigate to the edit notification route
+    navigate(editNotificationUrl);
   };
 
   return (
@@ -145,11 +168,21 @@ const CommonGrid = <T extends CommonItem>({
                     <TableCell>{item.name}</TableCell>
                     <TableCell>{item.description}</TableCell>
                     <TableCell>
-                      <ActionButtonGroup
-                        onEditClick={() => openModal(item)}
-                        onDeleteClick={() => openDeleteConfirmation(item)}
-                        isActive={item.isActive}
-                      />
+                      {itemType === "event" ? (
+                        // Render the action buttons for events
+                        <ActionButtonGroup
+                          onEditClick={() => openModal(item)}
+                          onDeleteClick={() => openDeleteConfirmation(item)}
+                          isActive={item.isActive}
+                        />
+                      ) : (
+                        // Render the action buttons for notifications with different edit behavior
+                        <ActionButtonGroup
+                          onEditClick={() => handleEditNotification(item.id)}
+                          onDeleteClick={() => openDeleteConfirmation(item)}
+                          isActive={item.isActive}
+                        />
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -160,14 +193,25 @@ const CommonGrid = <T extends CommonItem>({
       </div>
 
       <div>
-        <DialogBox
-          open={isModalOpen}
-          onClose={closeModal}
-          formData={formData}
-          handleInputChange={handleInputChange}
-          handleSave={handleSave}
-        />
+        {itemType === "event" ? (
+          <DialogBox
+            open={isModalOpen}
+            onClose={closeModal}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSave={handleSave}
+          />
+        ) : (
+          <NotificationDialog
+            open={isModalOpen}
+            onClose={closeModal}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSave={handleSave}
+          />
+        )}
       </div>
+
       <div>
         <DeleteDialog
           open={isDeleteConfirmationOpen}
