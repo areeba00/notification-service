@@ -19,7 +19,7 @@ interface Notifications {
 }
 
 interface ApiResponse {
-  TotalCount: string;
+  // TotalCount: string;
   notifications: Notifications[];
 }
 interface NotificationProps {
@@ -34,23 +34,23 @@ const Notifications = ({ eventId }: NotificationProps) => {
     if (eventId !== null) {
       // Fetch events using the selected application ID
       apiClient
-        .get<ApiResponse>(`/notifications?event_id=${eventId}`)
+        .get(`/notifications?event_id=${eventId}`)
         .then((response) => {
-          console.log("Fetched notifications:", response.data.notifications);
-          setNotifications(response.data.notifications);
+          console.log("Fetched notifications:", response.data);
+          setNotifications(response.data);
         })
         .catch((error) => {
           console.error("Error fetching notifications:", error);
         });
     } else {
       apiClient
-        .get<ApiResponse>("/notifications")
+        .get("/notifications")
         .then((response) => {
           console.log(
             "Fetched all notifications:",
-            response.data.notifications
+            response.data
           );
-          setNotifications(response.data.notifications);
+          setNotifications(response.data);
         })
         .catch((error) => {
           console.error("Error fetching all notifications:", error);

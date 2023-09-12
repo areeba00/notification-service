@@ -16,10 +16,10 @@ interface Events {
   isActive: boolean;
 }
 
-interface ApiResponse {
-  TotalCount: string;
-  events: Events[];
-}
+// interface ApiResponse {
+//   TotalCount: string;
+//   events: Events[];
+// }
 interface EventsProps {
   applicationId: number | null; // Selected application ID
 }
@@ -32,18 +32,18 @@ const Events = ({ applicationId }: EventsProps) => {
     if (applicationId !== null) {
       // Fetch events using the selected application ID
       apiClient
-        .get<ApiResponse>(`/events?application_id=${applicationId}`)
+        .get(`/events?application_id=${applicationId}`)
         .then((response) => {
-          setEvents(response.data.events);
+          setEvents(response.data);
         })
         .catch((error) => {
           console.error("Error fetching events:", error);
         });
     } else {
       apiClient
-        .get<ApiResponse>("/events")
+        .get("/events")
         .then((response) => {
-          setEvents(response.data.events);
+          setEvents(response.data);
         })
         .catch((error) => {
           console.error("Error fetching all events:", error);
