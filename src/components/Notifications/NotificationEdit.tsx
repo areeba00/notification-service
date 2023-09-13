@@ -2,7 +2,14 @@ import React, { useState, useEffect, ChangeEvent } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios"; // You can use Axios for making HTTP requests
 import apiClient from "../../apiService/api-client";
-
+import "./NotificationEdit.css";
+import {
+  Button,
+  Grid,
+  TextField,
+  TextareaAutosize,
+  Typography,
+} from "@mui/material";
 interface Notifications {
   id: number;
   name: string;
@@ -23,12 +30,25 @@ interface ApiResponse {
 
 const EditNotificationPage = () => {
   const { notificationId } = useParams(); // Get the notification ID from URL parameter
-  console.log(notificationId);
-  const [formData, setFormData] = useState({
+
+  // Separate state variables for each input field
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [preview, setPreview] = useState("");
+
+  const [formData, setFormData] = useState<Notifications>({
+    id: 0,
     name: "",
     description: "",
+    event_id: 0,
     template_subject: "",
     template_body: "",
+    created_at: "",
+    updated_at: "",
+    isActive: false,
+    tags: [],
   });
 
   useEffect(() => {
@@ -38,23 +58,38 @@ const EditNotificationPage = () => {
       .then((response) => {
         const notificationData = response.data;
         console.log(notificationData);
-        setFormData({
-          name: notificationData.name,
-          description: notificationData.description,
-          template_subject: notificationData.template_subject,
-          template_body: notificationData.template_body,
-        });
+        // Update the state variables for editing
+        setName(notificationData.name);
+        setDescription(notificationData.description);
+        setSubject(notificationData.template_subject);
+        setBody(notificationData.template_body);
+
+        // Update formData for submission (if needed)
+        setFormData(notificationData);
+        // Initialize the preview with subject and body
+        setPreview(
+          `Subject: ${notificationData.template_subject}\n${notificationData.template_body}`
+        );
       })
       .catch((error) => {
         console.error("Error fetching notification data:", error);
       });
   }, [notificationId]);
 
-  const handleFormSubmit = (event: { preventDefault: () => void }) => {
+  const handleFormSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+
+    // Create an object with the updated data
+    const updatedData = {
+      name,
+      description,
+      template_subject: subject,
+      template_body: body,
+    };
+
     // Send a PATCH request with the updated data
-    axios
-      .patch(`/api/notifications/${notificationId}`, formData)
+    apiClient
+      .patch(`/notifications/${notificationId}`, updatedData)
       .then((response) => {
         console.log("Notification updated successfully!");
         // You can navigate back to the list or perform any other action here
@@ -64,31 +99,59 @@ const EditNotificationPage = () => {
       });
   };
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+  // Update the preview whenever subject or body changes
+  useEffect(() => {
+    setPreview(`Subject: ${subject}\n${body}`);
+  }, [subject, body]);
 
   return (
-    <div>
-      <h1>Edit Notification</h1>
-      <form onSubmit={handleFormSubmit}>
-        <div>
-          <label>Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
+    <Grid container spacing={2} className="grid-container">
+      <Grid item xs={6} className="grid-left">
+        <form onSubmit={handleFormSubmit}>
+          <TextField
+            label="Name"
+            variant="outlined"
+            fullWidth
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
-        </div>
-        {/* Repeat similar input fields for description, template_subject, and template_body */}
-        <button type="submit">Save</button>
-      </form>
-    </div>
+          <TextField
+            label="Description"
+            variant="outlined"
+            fullWidth
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+          <TextField
+            label="Subject"
+            variant="outlined"
+            fullWidth
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          />
+          <TextField
+            placeholder="Body"
+            // rowsMin={5}
+            fullWidth
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+          <div>
+            <Button type="submit" variant="contained" color="primary">
+              Submit
+            </Button>
+            <Button type="button" variant="outlined">
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Grid>
+      <Grid item xs={6} className="grid-right">
+        <Typography variant="body1">
+          {`Subject: ${subject}\n${body}`}
+        </Typography>
+      </Grid>
+    </Grid>
   );
 };
 
