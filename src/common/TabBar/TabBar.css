@@ -1,15 +1,13 @@
 .tabbar-custom {
-  margin-left: 50px; /* Adjust the value as needed */
+  margin-left: 50px;
   margin-right: 50px;
   margin-top: 20px;
   background-color: #264552;
   border-radius: 10px;
 }
-
-/* Add top padding */
-.navbar-brand {
-  padding-top: 10px;
-}
+/* .search {
+  margin-bottom: 20px;
+} */
 .button {
   font-size: 50px;
   color: rgb(255, 255, 255);

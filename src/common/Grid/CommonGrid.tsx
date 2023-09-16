@@ -45,7 +45,7 @@ const CommonGrid = <T extends CommonItem>({
   onCheckboxClick,
 }: Props<T>) => {
   const navigate = useNavigate();
-  console.log(items);
+  // console.log(items);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<T | null>(null);
 
@@ -124,7 +124,7 @@ const CommonGrid = <T extends CommonItem>({
     if (selectedItems === itemId) {
       // If the same event is clicked again, unselect it and show all notifications
       setSelectedItems(null);
-      onCheckboxClick(null); // Pass null to indicate showing all notifications
+      onCheckboxClick(null);
     } else {
       setSelectedItems(itemId);
       onCheckboxClick(itemId);

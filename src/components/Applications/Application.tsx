@@ -25,10 +25,16 @@ interface ApiResponse {
 
 function Applications() {
   const [applications, setApplications] = useState<Applications[]>([]);
+  const [totalCount, setTotalCount] = useState<string>("");
 
   const [selectedApplicationId, setSelectedApplicationId] = useState<
     number | null
   >(null);
+
+  const [filtered_Applications, setfiltered_Applications] = useState<
+    Applications[]
+  >([]);
+
   // Add a state to control the visibility of events
   const [showEvents, setShowEvents] = useState(false);
 
@@ -36,11 +42,13 @@ function Applications() {
 
   const handleCardClick = (appId: number) => {
     // Toggle the display of events
-    setClickedCardID(appId);
+    setClickedCardID(clikcedCardID ? 0 : appId);
     setShowEvents(!showEvents);
 
     // Set the selected application ID only if events are shown
     setSelectedApplicationId(showEvents ? null : appId);
+
+    // setClickedCardID(clikcedCardID ? 0 : clikcedCardID);
   };
 
   useEffect(() => {
@@ -49,12 +57,32 @@ function Applications() {
       .then((res) => {
         setApplications(res.data.applications);
         setfiltered_Applications(res.data.applications);
+        setTotalCount(res.data.TotalCount);
       })
       .catch((error) => {
         // Handle any error that may occur during the API request
         console.error("Error fetching data:", error);
       });
   }, []);
+
+  // FILTERING APPLICATIONS
+
+  function filterObjectsByName(searchString: string): Applications[] {
+    if (searchString) {
+      const filteredApps = applications.filter((app) => {
+        const name = app.name.toLowerCase();
+        return name.includes(searchString.toLowerCase());
+      });
+      setfiltered_Applications(filteredApps);
+    } else {
+      // If the search field is empty, display all applications
+      setfiltered_Applications(applications);
+    }
+
+    setCurrentIndex(0);
+
+    return filtered_Applications;
+  }
 
   const deleteApplication = (application: Applications) => {
     // Create a new array that filters out the application to be deleted
@@ -64,6 +92,11 @@ function Applications() {
 
     // Update the state with the new array
     setApplications(updatedApplications);
+
+    const updated_filtered_apps = filtered_Applications.filter(
+      (app) => app.id !== application.id
+    );
+    setfiltered_Applications(updated_filtered_apps);
 
     apiClient
       .delete("/applications/" + application.id)
@@ -76,16 +109,23 @@ function Applications() {
     const { id, created_at, updated_at, isActive, ...dataWithoutId } =
       updatedApplication;
 
+    const updatedApps = applications.map((app) =>
+      app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
+    );
+    setApplications(updatedApps);
+
+    const updated_filtered_apps = filtered_Applications.map((app) =>
+      app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
+    );
+    setfiltered_Applications(updated_filtered_apps);
+
     // Send a PUT request to update the application on the server
     apiClient
-      .put("/applications/" + updatedApplication.id, dataWithoutId) // Send the updated data without the "id"
+      .patch("/applications/" + updatedApplication.id, dataWithoutId) // Send the updated data without the "id"
       .then((response) => {
-        // Assuming the server returns the updated application data
-        const updatedApps = applications.map((app) =>
-          app.id === updatedApplication.id ? response.data : app
-        );
-        setApplications(updatedApps);
+        console.log("Application updated successfully:", response.data);
       })
+
       .catch((error) => {
         console.error("Error updating application:", error);
       });
@@ -103,18 +143,19 @@ function Applications() {
   }
 
   function handleNext() {
-    const nextIndex = (currentIndex + 1) % applications.length;
+    const nextIndex = (currentIndex + 1) % filtered_Applications.length;
     setCurrentIndex(nextIndex);
   }
 
   function handlePrevious() {
     const prevIndex =
-      (currentIndex - 1 + applications.length) % applications.length;
+      (currentIndex - 1 + filtered_Applications.length) %
+      filtered_Applications.length;
     setCurrentIndex(prevIndex);
   }
 
   const isAtFirstCard = currentIndex === 0;
-  const isAtLastCard = currentIndex === applications.length - 1;
+  const isAtLastCard = currentIndex === filtered_Applications.length - 1;
 
   // add application functionality
 
@@ -162,29 +203,13 @@ function Applications() {
       });
   };
 
-  // FILTERING APPLICATIONS
-  const [filtered_Applications, setfiltered_Applications] = useState<
-    Applications[]
-  >([]);
-
-  function filterObjectsByName(searchString: string): Applications[] {
-    setfiltered_Applications(
-      applications.filter((apps) => {
-        const name = apps.name.toLowerCase();
-        searchString = searchString.toLowerCase();
-        return name.includes(searchString);
-      })
-    );
-
-    return filtered_Applications;
-  }
-
   return (
     <>
       <TabBar
         title={"APPLICATIONS"}
         onAddClick={handleAddClick}
         submitFunction={filterObjectsByName}
+        totalCount={totalCount}
       />
       <div className="container-fluid">
         <div className="row">
@@ -193,6 +218,7 @@ function Applications() {
               onClick={handlePrevious}
               disabled={isAtFirstCard}
               className="TBS_arrow_button_left"
+              // style={{ width: "5px", height: "10px" }}
             />
 
             <div className="TBS_slider">
@@ -227,6 +253,7 @@ function Applications() {
               onClick={handleNext}
               disabled={isAtLastCard}
               className="TBS_arrow_button_right"
+              // style={{ width: "5px", height: "10px" }}
             />
           </div>
         </div>
@@ -239,7 +266,12 @@ function Applications() {
         handleAdd={handleAddApplication}
         title="Add Application"
       />
-      <Events applicationId={selectedApplicationId} />
+
+      <Events
+        applicationId={
+          selectedApplicationId === clikcedCardID ? clikcedCardID : null
+        }
+      />
     </>
   );
 }

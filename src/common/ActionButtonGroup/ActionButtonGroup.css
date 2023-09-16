@@ -7,6 +7,7 @@
   width: 170px;
   border-radius: 15px;
   outline: outset 4px gray;
+  /* width: 100px; */
 }
 
 .icon-button {
@@ -20,8 +21,30 @@
 }
 
 .custom-button-container button:hover {
-  background-color: transparent; /* Set the background color on hover (if needed) */
+  background-color: transparent;
 }
 .custom-button-container .icon-button:hover {
-  transform: scale(1.4); /* Change the background color on hover */
+  transform: scale(1.4);
+}
+
+
+.icon-button.toggle{
+  margin-top: 0;
+  margin-bottom: -3px;
+}
+
+.togglebutton{
+  position: relative;
+  font-size: 21px;
+  transform: scale(1.2);
+  padding-bottom: 5px;
+  /* font-size: 30px; */
+}
+
+.on{
+  color: rgb(1, 223, 20)
+}
+
+.off{
+  color:red
 }

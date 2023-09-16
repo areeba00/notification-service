@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, ChangeEvent } from "react";
 import apiClient from "../../apiService/api-client";
-import Grid from "../../common/Grid/Grid";
 import TabBar from "../../common/TabBar/TabBar";
 import AddDialog from "../../common/AddDialog/AddDialog";
 import CommonGrid from "../../common/Grid/CommonGrid";
 import Notifications from "../Notifications/Notifications";
-// ... other imports ...
+import CircularProgress from "@mui/material/CircularProgress"; // Adjust the import path if needed
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import { TablePagination } from "@mui/material";
 
 interface Events {
   id: number;
@@ -28,31 +30,56 @@ interface EventsProps {
 
 const Events = ({ applicationId }: EventsProps) => {
   const [events, setEvents] = useState<Events[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null); // Step 1
+  const [originalEvents, setOriginalEvents] = useState<Events[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  const [totalCount, setTotalCount] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(3);
 
   // Fetch events when the selected application ID changes
   useEffect(() => {
+    setIsLoading(true);
+
     if (applicationId !== null) {
-      // Fetch events using the selected application ID
+      // Calculate the offset based on the current page and rowsPerPage
+      const offset = page * rowsPerPage;
       apiClient
-        .get<ApiResponse>(`/events?application_id=${applicationId}`)
+        .get<ApiResponse>(
+          `/events?application_id=${applicationId}&page=${
+            page + 1
+          }&limit=${rowsPerPage}`
+        )
         .then((response) => {
-          setEvents(response.data.events);
+          const eventsData = response.data.events;
+          setOriginalEvents(eventsData); // Store original events
+          setEvents(eventsData);
+          setTotalCount(response.data.TotalCount);
         })
         .catch((error) => {
           console.error("Error fetching events:", error);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     } else {
-      apiClient
-        .get<ApiResponse>("/events")
-        .then((response) => {
-          setEvents(response.data.events);
-        })
-        .catch((error) => {
-          console.error("Error fetching all events:", error);
-        });
+      setEvents([]);
+      setIsLoading(false);
+      setTotalCount("");
     }
-  }, [applicationId]);
+  }, [applicationId, page, rowsPerPage]);
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset the page to 0 when changing rows per page
+  };
 
   const deleteEvent = (event: Events) => {
     // Create a new array that filters out the event to be deleted
@@ -87,8 +114,6 @@ const Events = ({ applicationId }: EventsProps) => {
         console.error("Error updating event:", error);
       });
   };
-
-  // add event functionality
 
   const [isAddDialogOpen, setAddDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -139,26 +164,76 @@ const Events = ({ applicationId }: EventsProps) => {
   const handleCheckboxClick = (eventId: number) => {
     setSelectedEventId(eventId); // Update the selected event ID state
   };
+
+  // filtering events
+  function filterEventsByName(searchString: string): Events[] {
+    if (searchString) {
+      const filteredEvents = events.filter((event) => {
+        const name = event.name.toLowerCase();
+        return name.includes(searchString.toLowerCase());
+      });
+      setEvents(filteredEvents);
+    } else {
+      setEvents(originalEvents);
+    }
+
+    return events;
+  }
+
   return (
     <>
-      <TabBar title={"Events"} onAddClick={handleAddClick} />
-      <CommonGrid
-        items={events}
-        deleteHandler={deleteEvent}
-        editHandler={editEvent}
-        itemType="event"
-        onCheckboxClick={handleCheckboxClick}
+      <TabBar
+        title={"Events"}
+        onAddClick={handleAddClick}
+        submitFunction={filterEventsByName}
+        totalCount={totalCount}
       />
-      <AddDialog
-        open={isAddDialogOpen}
-        onClose={handleCloseAddDialog}
-        formData={formData}
-        handleInputChange={handleInputChange}
-        handleAdd={handleAddEvent}
-        title="Add Event"
-      />
-
-      <Notifications eventId={selectedEventId} />
+      {isLoading && (
+        <CircularProgress /> // Show loading indicator while fetching data
+      )}
+      {applicationId === null && (
+        <Alert severity="info" className="my-Alerts">
+          <AlertTitle>Info</AlertTitle>
+          No Events to show — <strong>Kindly select an application!</strong>
+        </Alert>
+      )}
+      {applicationId !== null && events.length === 0 ? (
+        <Alert severity="warning" className="my-Alerts">
+          <AlertTitle>Failed</AlertTitle>
+          No events found —{" "}
+          <strong>This Application has no corresponding events!</strong>
+        </Alert>
+      ) : (
+        applicationId != null &&
+        !isLoading && (
+          <>
+            <CommonGrid
+              items={events}
+              deleteHandler={deleteEvent}
+              editHandler={editEvent}
+              itemType="event"
+              onCheckboxClick={handleCheckboxClick}
+            />
+            <TablePagination
+              component="div"
+              count={parseInt(totalCount)}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+            <AddDialog
+              open={isAddDialogOpen}
+              onClose={handleCloseAddDialog}
+              formData={formData}
+              handleInputChange={handleInputChange}
+              handleAdd={handleAddEvent}
+              title="Add Event"
+            />
+            <Notifications eventId={selectedEventId} />
+          </>
+        )
+      )}
     </>
   );
 };

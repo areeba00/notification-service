@@ -3,11 +3,12 @@
 
 /* Apply styles to the login container */
 #loginform {
-  width: 45%;
-  height: 60%;
-  margin: auto;
+  width: 50%;
+  height: 30%;
+  margin-top: 90px;
+  margin-left: 350px;
   background-color: #ffffff;
-  border-radius: 25px;
+  border-radius: 10px;
   text-align: start;
   overflow: visible;
 }

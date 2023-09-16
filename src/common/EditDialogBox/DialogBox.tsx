@@ -1,6 +1,4 @@
-// EditDialog.tsx
-
-import React, { ChangeEvent } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -26,6 +24,30 @@ const DialogBox: React.FC<EditDialogProps> = ({
   handleInputChange,
   handleSave,
 }) => {
+  const [nameError, setNameError] = useState<string>("");
+  const [descriptionError, setDescriptionError] = useState<string>("");
+  const [isSaveDisabled, setIsSaveDisabled] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check the length of name and description when the "Save" button is clicked
+    const isNameValid = formData.name.length >= 3;
+    const isDescriptionValid = formData.description.length >= 5;
+
+    setIsSaveDisabled(!(isNameValid && isDescriptionValid));
+
+    if (!isNameValid) {
+      setNameError("Name must be at least 3 characters");
+    } else {
+      setNameError("");
+    }
+
+    if (!isDescriptionValid) {
+      setDescriptionError("Description must be at least 5 characters");
+    } else {
+      setDescriptionError("");
+    }
+  }, [formData]);
+
   return (
     <Dialog
       open={open}
@@ -53,6 +75,8 @@ const DialogBox: React.FC<EditDialogProps> = ({
           style={{ marginBottom: "30px", marginTop: "10px" }}
           value={formData.name}
           onChange={handleInputChange}
+          error={Boolean(nameError)}
+          helperText={nameError}
         />
         <TextField
           label="Description"
@@ -62,13 +86,15 @@ const DialogBox: React.FC<EditDialogProps> = ({
           variant="outlined"
           value={formData.description}
           onChange={handleInputChange}
+          error={Boolean(descriptionError)}
+          helperText={descriptionError}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="secondary">
           Cancel
         </Button>
-        <Button onClick={handleSave} color="primary">
+        <Button onClick={handleSave} color="primary" disabled={isSaveDisabled}>
           Save
         </Button>
       </DialogActions>

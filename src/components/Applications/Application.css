@@ -31,3 +31,36 @@
   height: 100%;
   z-index: 1300; /* Ensure the backdrop is above other elements */
 }
+
+/* .Nothing_Selected{
+  padding-top: 20px;
+  padding-bottom: 20px;
+  width: 60%;
+  margin-left: 20%;
+  border-radius: 10px;
+  outline: 1px solid rgb(210, 207, 207);
+  background-color: rgb(255, 255, 255);
+  font-family: "Calibri", "Helvetica Neue", Helvetica,;
+  color: rgb(255, 2, 2);
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 40px;
+  font-size: 30px;
+  font-weight: 400;
+} */
+
+.my-Alerts{
+  margin-left: 70px;
+  margin-top: 20px;
+  margin-right: 70px;
+  margin-bottom: 50px;
+}
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+  font-size: 14px;
+}

@@ -52,7 +52,7 @@ Props) => {
     if (clicked_id !== card_id) {
       setIsCardClicked(false);
     }
-  },[clicked_id, card_id]);
+  }, [clicked_id, card_id]);
   // Function to close the delete confirmation dialog
   const closeDeleteConfirmation = () => {
     setIsDeleteConfirmationOpen(false);
@@ -76,7 +76,12 @@ Props) => {
     description: "",
   });
 
-  const openModal = () => {
+
+  const openModal = (applications: Applications) => {
+    setFormData({
+      name: applications.name,
+      description: applications.description,
+    });
     setIsModalOpen(true);
   };
 
@@ -132,19 +137,24 @@ Props) => {
       >
         <div className="C-infos" key={applications.id}>
           <div className="C-text-data">
+            
             <h2 className="C-title">{applications.name}</h2>
-            <p className="C-txt">{applications.description}</p>
+            <br></br><br></br><br></br>
+            <p className="C-txt">
+              {applications.description}
+              {/* Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus minus mollitia magnam ipsa aliquid. Dolore nesciunt quam voluptate, sunt doloremque sit laudantium architecto maxime laboriosam? Nesciunt aut excepturi fugiat molestiae. */}
+            </p>
           </div>
-
-          {/* <div className="mt-8">
-            {" "} */}
+          <br></br>
+          <div className="C-action-buttons">
             <ActionButtonGroup
-              onEditClick={openModal}
+              onEditClick={() => openModal(applications)}
               onDeleteClick={() => openDeleteConfirmation(applications)}
               isActive={applications.isActive}
             />
-          {/* </div> */}
+          </div>
         </div>
+      </article>
         <div>
           <DialogBox
             open={isModalOpen}
@@ -161,7 +171,6 @@ Props) => {
             onConfirm={confirmDelete}
           />
         </div>
-      </article>
     </>
   );
 };

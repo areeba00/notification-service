@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useState, useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import {
   Table,
@@ -52,13 +52,56 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
     setIsModalOpen(false);
   };
 
+
+
+
+  const [nameError, setNameError] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
+  
+  const [errorData, setErrorData] = useState({nameError: " ",descriptionError:" ",})
+  // useEffect(() => {
+  //   setErrorData({
+  //     nameError: nameError,
+  //     descriptionError: descriptionError,
+  //   });
+  // },[nameError, descriptionError])
+  
+
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
+  
+    // Validate the "Name" field
+    let nameErr = "";
+    if (name === "name" && value.length < 5) {
+      nameErr = "Name must have at least 5 characters.";
+    }
+  
+    // Validate the "Description" field
+    let descriptionErr = "";
+    if (name === "description" && value.length < 5) {
+      descriptionErr = "Description must have at least 5 characters.";
+    }
+  
+    // Update the state for nameError and descriptionError
+    setNameError(nameErr);
+    setDescriptionError(descriptionErr);
+  
+    // Update the errorData state object
+    setErrorData({
+      nameError: nameErr,
+      descriptionError: descriptionErr,
+    });
+  
+    // Update the formData state
     setFormData({
       ...formData,
       [name]: value,
     });
   };
+  
+
+
 
   const handleSave = () => {
     if (selectedEvent) {
@@ -154,6 +197,7 @@ const Grid = ({ events, deleteHandler, editHandler }: Props) => {
           formData={formData}
           handleInputChange={handleInputChange}
           handleSave={handleSave}
+          errors={errorData || { nameError: "", descriptionError: "" }}
         />
       </div>
       <div>

@@ -4,8 +4,10 @@ import apiClient from "../../apiService/api-client";
 import Grid1 from "../../common/Grid/Grid1";
 import TabBar from "../../common/TabBar/TabBar";
 import CommonGrid from "../../common/Grid/CommonGrid";
-// ... other imports ...
-
+import { useNavigate } from "react-router-dom";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import { TablePagination } from "@mui/material";
 interface Notifications {
   id: number;
   name: string;
@@ -24,40 +26,55 @@ interface ApiResponse {
   notifications: Notifications[];
 }
 interface NotificationProps {
-  eventId: number | null; // Selected application ID
+  eventId: number | null;
 }
 
 const Notifications = ({ eventId }: NotificationProps) => {
+  const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notifications[]>([]);
+  const [originalNotifications, setOriginalNotifications] = useState<
+    Notifications[]
+  >([]);
+  const [totalCount, setTotalCount] = useState<string>("");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(3);
 
   // Fetch events when the selected application ID changes
   useEffect(() => {
     if (eventId !== null) {
       // Fetch events using the selected application ID
       apiClient
-        .get<ApiResponse>(`/notifications?event_id=${eventId}`)
+        .get<ApiResponse>(
+          `/notifications?event_id=${eventId}&page=${
+            page + 1
+          }&limit=${rowsPerPage}`
+        )
         .then((response) => {
-          console.log("Fetched notifications:", response.data.notifications);
-          setNotifications(response.data.notifications);
+          const notificationsData = response.data.notifications;
+          setOriginalNotifications(notificationsData);
+          setNotifications(notificationsData);
+          setTotalCount(response.data.TotalCount);
         })
         .catch((error) => {
           console.error("Error fetching notifications:", error);
         });
     } else {
-      apiClient
-        .get<ApiResponse>("/notifications")
-        .then((response) => {
-          console.log(
-            "Fetched all notifications:",
-            response.data.notifications
-          );
-          setNotifications(response.data.notifications);
-        })
-        .catch((error) => {
-          console.error("Error fetching all notifications:", error);
-        });
+      setNotifications([]);
     }
-  }, [eventId]);
+    setTotalCount("");
+  }, [eventId, page, rowsPerPage]);
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset the page to 0 when changing rows per page
+  };
 
   // delete api
 
@@ -107,42 +124,68 @@ const Notifications = ({ eventId }: NotificationProps) => {
       });
   };
 
-  // add dialog
-  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-  });
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
   const handleAddClick = () => {
-    setAddDialogOpen(true);
+    // Replace "edit-notification" with the actual route for the "Edit Notification" page
+    const notificationAddUrl = `/add-notification/${eventId}`;
+    navigate(notificationAddUrl);
   };
 
-  const handleCloseAddDialog = () => {
-    setAddDialogOpen(false);
-    // Reset the form data to empty fields
-    setFormData({
-      name: "",
-      description: "",
-    });
-  };
+  // filtering notifications
+  function filterNotificationsByName(searchString: string): Notifications[] {
+    if (searchString) {
+      const filteredNotifications = notifications.filter((notification) => {
+        const name = notification.name.toLowerCase();
+        return name.includes(searchString.toLowerCase());
+      });
+      setNotifications(filteredNotifications);
+    } else {
+      setNotifications(originalNotifications);
+    }
+
+    return notifications;
+  }
 
   return (
     <>
-      <TabBar title={"Notifications"} onAddClick={handleAddClick} />
-      <CommonGrid
-        items={notifications}
-        editHandler={editNotification}
-        deleteHandler={deleteNotification}
-        itemType="notification"
+      <TabBar
+        title={"Notifications"}
+        onAddClick={handleAddClick}
+        submitFunction={filterNotificationsByName}
+        totalCount={totalCount}
       />
+      {eventId === null && (
+        <Alert severity="info" className="my-Alerts">
+          <AlertTitle>Info</AlertTitle>
+          No Notifications to show — <strong>Kindly select an event!</strong>
+        </Alert>
+      )}
+
+      {eventId != null && notifications.length === 0 ? (
+        <Alert severity="warning" className="my-Alerts">
+          <AlertTitle>Failed</AlertTitle>
+          No notifications found —{" "}
+          <strong>This Event has no corresponding notifications!</strong>
+        </Alert>
+      ) : (
+        eventId !== null && (
+          <>
+            <CommonGrid
+              items={notifications}
+              editHandler={editNotification}
+              deleteHandler={deleteNotification}
+              itemType="notification"
+            />
+            <TablePagination
+              component="div"
+              count={parseInt(totalCount)}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </>
+        )
+      )}
     </>
   );
 };
