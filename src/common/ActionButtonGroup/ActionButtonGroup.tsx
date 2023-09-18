@@ -19,9 +19,8 @@ const ActionButtonGroup: React.FC<ActionButtonGroupProps> = ({
   onEditClick,
   onDeleteClick,
   //   onToggleClick,
-  // isActive,
+  isActive,
 }) => {
-
   const [clicked, setclicked] = useState(true);
 
   return (
@@ -36,16 +35,11 @@ const ActionButtonGroup: React.FC<ActionButtonGroupProps> = ({
         className="icon-button"
         style={{ color: "red" }}
       />
-      {/* <RiRadioButtonLine
-        className="icon-button"
-        style={{ color: isActive ? "green" : "primary" }}
-      /> */}
-      {/* <ToggleButton /> */}
       <div className="icon-button toggle">
         {!clicked && (
           <PiToggleLeftFill
             className="togglebutton off"
-            onClick={(event) => {
+            onClick={(event: { stopPropagation: () => void; }) => {
               event.stopPropagation();
               setclicked(true);
               console.log("like button has been clicked");
@@ -53,7 +47,13 @@ const ActionButtonGroup: React.FC<ActionButtonGroupProps> = ({
           />
         )}
         {clicked && (
-          <PiToggleRightFill className="togglebutton on" onClick={(event) => {event.stopPropagation(); setclicked(false); setTimeout(()=>setclicked(true),2000);}} />
+          <PiToggleRightFill
+            className={`togglebutton ${isActive ? "on" : "off"}`}
+            onClick={(event: { stopPropagation: () => void; }) => {
+              event.stopPropagation();
+              setclicked(!clicked);
+            }}
+          />
         )}
       </div>
     </div>

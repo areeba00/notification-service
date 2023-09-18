@@ -37,6 +37,30 @@ const Events = ({ applicationId }: EventsProps) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(3);
 
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean>(true);
+
+  const handleIsActiveFilterClick = () => {
+    // Toggle the isActiveFilter state when the button is clicked
+    setIsActiveFilter(!isActiveFilter);
+
+    // Construct the API URL based on the isActiveFilter value and applicationId
+    const apiUrl = `/events?application_id=${applicationId}&isActive=${isActiveFilter}`;
+
+    // Send the API request using your API client
+    apiClient
+      .get(apiUrl)
+      .then((response) => {
+        // Handle the response and update your applications state accordingly
+        const activeEvents = response.data.events;
+        setOriginalEvents(activeEvents);
+        setEvents(activeEvents);
+        setTotalCount(response.data.TotalCount);
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered events:", error);
+      });
+  };
+
   // Fetch events when the selected application ID changes
   useEffect(() => {
     setIsLoading(true);
@@ -187,6 +211,7 @@ const Events = ({ applicationId }: EventsProps) => {
         onAddClick={handleAddClick}
         submitFunction={filterEventsByName}
         totalCount={totalCount}
+        onIsActiveFilterClick={handleIsActiveFilterClick}
       />
       {isLoading && (
         <CircularProgress /> // Show loading indicator while fetching data

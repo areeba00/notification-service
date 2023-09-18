@@ -4,12 +4,21 @@ import React, { useState, useEffect, ChangeEvent } from "react";
 import { useParams } from "react-router-dom";
 import apiClient from "../../apiService/api-client";
 import "./NotificationEdit.css";
-import { Button, Grid, TextField, Typography } from "@mui/material";
+import {
+  Button,
+  FormControl,
+  Grid,
+  MenuItem,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { z, ZodError } from "zod";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 import { useNavigate } from "react-router-dom";
 import { List, ListItem, ListItemText } from "@mui/material";
+import Select from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
 import {
   Dialog,
   DialogTitle,
@@ -29,69 +38,40 @@ interface Notifications {
   isActive?: boolean;
   tags?: string[];
 }
-
+interface Tags {
+  id?: string;
+  label: string;
+}
 const EditNotificationPage = () => {
   // navigation route
   const navigate = useNavigate();
 
-  // tags getting
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState("");
 
-  const [tagSuggestions, setTagSuggestions] = useState([]);
-  const [selectedTag, setSelectedTag] = useState("");
-  const [inputValue, setInputValue] = useState("");
+  const [tags, setTags] = useState<Tags[]>([]); // State variable for tags
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
+  // Fetch tags from the API when the component mounts
   useEffect(() => {
-    // Fetch tag suggestions when the component mounts
-    fetchTagSuggestions();
-  }, []);
-
-  const fetchTagSuggestions = () => {
-    // Make a GET request to fetch tag suggestions from the /tags endpoint
     apiClient
       .get("/tags")
       .then((response) => {
-        const tagSuggestions = response.data.map((tag) => tag.label);
-        setTagSuggestions(tagSuggestions);
+        setTags(response.data);
       })
       .catch((error) => {
-        console.error("Error fetching tag suggestions:", error);
+        console.error("Error fetching tags:", error);
       });
+  }, []);
+
+  // Event handler to add a selected tag to the template body
+  const handleTagSelect = (tag: string) => {
+    if (tag && !selectedTag) {
+      // If a tag is selected and no tag is currently added
+      setBody(`${body} {${tag}}`);
+      setSelectedTag(null);
+    }
   };
-
-  const handleTagClick = (tag) => {
-    // Handle tag selection and auto-complete the input value
-    const updatedInputValue = inputValue.replace("{", `{${tag} `);
-    setInputValue(updatedInputValue);
-
-    // Clear the tag suggestions
-    setTagSuggestions([]);
-  };
-
-  // State for popover
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  const handlePopoverOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-    fetchTagSuggestions(); // Fetch tag suggestions when '{' is entered
-  };
-
-  const handlePopoverClose = () => {
-    setAnchorEl(null);
-  };
-
-  const isPopoverOpen = Boolean(anchorEl);
-
-  // getting id's from urls
-  const { notificationId, eventId } = useParams();
-
-  const notificationSchema = z.object({
-    name: z.string().min(3),
-    description: z.string().min(5),
-    template_subject: z.string().min(5),
-    template_body: z.string().min(5),
-  });
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [dialogMessage, setDialogMessage] = useState("");
 
   // Separate state variables for each input field
   const [name, setName] = useState("");
@@ -107,6 +87,16 @@ const EditNotificationPage = () => {
   const [validationErrors, setValidationErrors] = useState<ZodError | null>(
     null
   );
+
+  // getting id's from urls
+  const { notificationId, eventId } = useParams();
+
+  const notificationSchema = z.object({
+    name: z.string().min(3),
+    description: z.string().min(5),
+    template_subject: z.string().min(5),
+    template_body: z.string().min(5),
+  });
 
   const validateForm = (data: Notifications) => {
     try {
@@ -135,19 +125,6 @@ const EditNotificationPage = () => {
       return error;
     }
   };
-
-  // const [formData, setFormData] = useState<Notifications>({
-  //   id: 0,
-  //   name: "",
-  //   description: "",
-  //   event_id: 0,
-  //   template_subject: "",
-  //   template_body: "",
-  //   created_at: "",
-  //   updated_at: "",
-  //   isActive: false,
-  //   tags: [],
-  // });
 
   useEffect(() => {
     if (notificationId) {
@@ -282,8 +259,29 @@ const EditNotificationPage = () => {
               fullWidth
               value={body}
               onChange={(e) => setBody(e.target.value)}
+              // value={templateBody}
+              // onChange={handleTemplateBodyChange}
             />
             {bodyError && <div className="validation-error">{bodyError}</div>}
+
+            <FormControl fullWidth>
+              <InputLabel htmlFor="tag-select">Select a tag</InputLabel>
+              <Select
+                onChange={(e) => handleTagSelect(e.target.value)}
+                value={selectedTag || ""}
+                style={{ width: "100%" }}
+                labelId="tag-select"
+              >
+                <MenuItem value="" disabled>
+                  Select a tag
+                </MenuItem>
+                {tags.map((tag) => (
+                  <MenuItem key={tag.id} value={tag.label}>
+                    {tag.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <div className="buttonContainer">
               <Button
                 type="submit"
@@ -291,7 +289,7 @@ const EditNotificationPage = () => {
                 color="primary"
                 onClick={handleFormSubmit}
                 style={{ width: "140px", marginRight: "20px" }}
-                className="submitButton" // Add the custom className for the submit button
+                className="submitButton"
               >
                 Submit
               </Button>
@@ -325,14 +323,6 @@ const EditNotificationPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <List>
-        {tagSuggestions.map((tag, index) => (
-          <ListItem button key={index} onClick={() => handleTagClick(tag)}>
-            <ListItemText primary={tag} />
-          </ListItem>
-        ))}
-      </List>
     </>
   );
 };

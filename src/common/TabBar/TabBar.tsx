@@ -3,7 +3,9 @@ import IconButton from "@mui/material/IconButton";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { IoSearchCircleSharp } from "react-icons/io5";
 import "./TabBar.css";
-
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import Popover from "@mui/material/Popover"; // Import the Popover component
+import Button from "@mui/material/Button";
 interface Applications {
   id: number;
   name: string;
@@ -18,9 +20,26 @@ interface Props {
   onAddClick: () => void;
   submitFunction: (searchString: string) => Applications[];
   totalCount: string;
+  onIsActiveFilterClick: () => void;
 }
 
 const TabBar = (props: Props) => {
+  const handleIsActiveFilterClick = () => {
+    // Call the parent component's callback function when "isActive" is clicked
+    props.onIsActiveFilterClick();
+  };
+  const [isPopoverOpen, setPopoverOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
+  const handleFilterIconClick = (event: React.MouseEvent<HTMLElement>) => {
+    setPopoverOpen(true);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClosePopover = () => {
+    setPopoverOpen(false);
+    setAnchorEl(null);
+  };
   const iconStyle = {
     fontSize: "30px", // Set the font size
     color: "white",
@@ -81,6 +100,30 @@ const TabBar = (props: Props) => {
             </span>
           )}
         </a>
+        {/* Add the FilterAltIcon */}
+        <IconButton style={iconStyle} onClick={handleFilterIconClick}>
+          <FilterAltIcon />
+        </IconButton>
+        <Popover
+          open={isPopoverOpen}
+          anchorEl={anchorEl}
+          onClose={handleClosePopover}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "right",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+        >
+          <div style={{ padding: "10px" }}>
+            <Button color="primary" onClick={handleIsActiveFilterClick}>
+              isActive{" "}
+            </Button>
+          </div>
+        </Popover>
+
         <form className="d-flex search" onSubmit={handleSubmit}>
           <input
             className="form-control mb-2"

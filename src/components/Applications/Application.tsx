@@ -34,11 +34,36 @@ function Applications() {
   const [filtered_Applications, setfiltered_Applications] = useState<
     Applications[]
   >([]);
+  const [loading, setLoading] = useState(true);
 
   // Add a state to control the visibility of events
   const [showEvents, setShowEvents] = useState(false);
 
   const [clikcedCardID, setClickedCardID] = useState<number>(0);
+
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean>(true);
+
+  const handleIsActiveFilterClick = () => {
+    // Toggle the isActiveFilter state when the button is clicked
+    setIsActiveFilter(!isActiveFilter);
+
+    // Construct the API URL based on the isActiveFilter value
+    const apiUrl = `/applications?isActive=${isActiveFilter}`;
+
+    // Send the API request using your API client
+    apiClient
+      .get(apiUrl)
+      .then((response) => {
+        // Handle the response and update your applications state accordingly
+        const activeapps = response.data.applications;
+        setApplications(activeapps);
+        setfiltered_Applications(activeapps);
+        setTotalCount(response.data.TotalCount);
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered applications:", error);
+      });
+  };
 
   const handleCardClick = (appId: number) => {
     // Toggle the display of events
@@ -58,10 +83,12 @@ function Applications() {
         setApplications(res.data.applications);
         setfiltered_Applications(res.data.applications);
         setTotalCount(res.data.TotalCount);
+        setLoading(false);
       })
       .catch((error) => {
         // Handle any error that may occur during the API request
         console.error("Error fetching data:", error);
+        setLoading(false);
       });
   }, []);
 
@@ -196,6 +223,7 @@ function Applications() {
         // Assuming the server returns the added application data
         const addedApp = response.data;
         setApplications([...applications, addedApp]);
+        setfiltered_Applications([...applications, addedApp]);
         handleCloseAddDialog();
       })
       .catch((error) => {
@@ -210,54 +238,59 @@ function Applications() {
         onAddClick={handleAddClick}
         submitFunction={filterObjectsByName}
         totalCount={totalCount}
+        onIsActiveFilterClick={handleIsActiveFilterClick}
       />
-      <div className="container-fluid">
-        <div className="row">
-          <div className="TBS_slider-container">
-            <BiSolidLeftArrow
-              onClick={handlePrevious}
-              disabled={isAtFirstCard}
-              className="TBS_arrow_button_left"
-              // style={{ width: "5px", height: "10px" }}
-            />
+      {loading ? (
+        <div>Loading...</div> // Show loading indicator while fetching data
+      ) : (
+        <div className="container-fluid">
+          <div className="row">
+            <div className="TBS_slider-container">
+              <BiSolidLeftArrow
+                onClick={handlePrevious}
+                disabled={isAtFirstCard}
+                className="TBS_arrow_button_left"
+                // style={{ width: "5px", height: "10px" }}
+              />
 
-            <div className="TBS_slider">
-              <div
-                className="TBS_card-wrapper"
-                style={{ transform: `translateX(-${currentIndex * 260}px)` }} // Adjust card width
-              >
-                {filtered_Applications.map((app, index) => (
-                  <div
-                    key={index}
-                    className={`TBS_slider-card ${
-                      index >= currentIndex &&
-                      index < currentIndex + visibleCards
-                        ? "visible"
-                        : ""
-                    }`}
-                  >
-                    <Cards
-                      clicked_id={clikcedCardID}
-                      card_id={app.id}
-                      applications={app}
-                      deleteHandler={deleteApplication}
-                      editHandler={editApplication}
-                      onClick={() => handleCardClick(app.id)}
-                    />
-                  </div>
-                ))}
+              <div className="TBS_slider">
+                <div
+                  className="TBS_card-wrapper"
+                  style={{ transform: `translateX(-${currentIndex * 260}px)` }} // Adjust card width
+                >
+                  {filtered_Applications.map((app, index) => (
+                    <div
+                      key={index}
+                      className={`TBS_slider-card ${
+                        index >= currentIndex &&
+                        index < currentIndex + visibleCards
+                          ? "visible"
+                          : ""
+                      }`}
+                    >
+                      <Cards
+                        clicked_id={clikcedCardID}
+                        card_id={app.id}
+                        applications={app}
+                        deleteHandler={deleteApplication}
+                        editHandler={editApplication}
+                        onClick={() => handleCardClick(app.id)}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <BiSolidRightArrow
-              onClick={handleNext}
-              disabled={isAtLastCard}
-              className="TBS_arrow_button_right"
-              // style={{ width: "5px", height: "10px" }}
-            />
+              <BiSolidRightArrow
+                onClick={handleNext}
+                disabled={isAtLastCard}
+                className="TBS_arrow_button_right"
+                // style={{ width: "5px", height: "10px" }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      )}
       <AddDialog
         open={isAddDialogOpen}
         onClose={handleCloseAddDialog}

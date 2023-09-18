@@ -39,7 +39,30 @@ const Notifications = ({ eventId }: NotificationProps) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(3);
 
-  // Fetch events when the selected application ID changes
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean>(true);
+
+  const handleIsActiveFilterClick = () => {
+    // Toggle the isActiveFilter state when the button is clicked
+    setIsActiveFilter(!isActiveFilter);
+
+    // Construct the API URL based on the isActiveFilter value and applicationId
+    const apiUrl = `/notifications?event_id=${eventId}&isActive=${isActiveFilter}`;
+
+    // Send the API request using your API client
+    apiClient
+      .get(apiUrl)
+      .then((response) => {
+        // Handle the response and update your applications state accordingly
+        const activeNotifications = response.data.notifications;
+        setNotifications(activeNotifications);
+        setTotalCount(response.data.TotalCount);
+      })
+      .catch((error) => {
+        console.error("Error fetching filtered notifications:", error);
+      });
+  };
+
+  // Fetch notifications when the selected event ID changes
   useEffect(() => {
     if (eventId !== null) {
       // Fetch events using the selected application ID
@@ -152,6 +175,7 @@ const Notifications = ({ eventId }: NotificationProps) => {
         onAddClick={handleAddClick}
         submitFunction={filterNotificationsByName}
         totalCount={totalCount}
+        onIsActiveFilterClick={handleIsActiveFilterClick}
       />
       {eventId === null && (
         <Alert severity="info" className="my-Alerts">

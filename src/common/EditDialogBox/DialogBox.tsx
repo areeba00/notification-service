@@ -56,7 +56,7 @@ const DialogBox: React.FC<EditDialogProps> = ({
         style: {
           width: "90%",
           maxWidth: "600px",
-          height: "60vh",
+          height: "auto",
           maxHeight: "600px",
           borderRadius: "10px",
         },
@@ -81,6 +81,8 @@ const DialogBox: React.FC<EditDialogProps> = ({
         <TextField
           label="Description"
           name="description"
+          multiline
+          rows={5}
           fullWidth
           margin="dense"
           variant="outlined"
