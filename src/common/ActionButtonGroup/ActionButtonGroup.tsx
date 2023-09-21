@@ -6,54 +6,88 @@ import { FaPen } from "react-icons/fa";
 // import ToggleButton from "../ToggleButton/toggle";
 import { PiToggleLeftFill } from "react-icons/pi";
 import { PiToggleRightFill } from "react-icons/pi";
-import { useState } from "react";
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import { useState, useEffect } from "react";
+
 
 interface ActionButtonGroupProps {
   onEditClick: () => void;
   onDeleteClick: () => void;
-  //   onToggleClick: () => void;
+  // onToggleClick: () => void;
   isActive: boolean;
+  switchActive_fun?: (arg: boolean) => void;
 }
 
 const ActionButtonGroup: React.FC<ActionButtonGroupProps> = ({
   onEditClick,
   onDeleteClick,
-  //   onToggleClick,
+  // onToggleClick,
   isActive,
+  switchActive_fun,
 }) => {
+
   const [clicked, setclicked] = useState(true);
+  
+  useEffect(() => {
+    setclicked(isActive);
+  }, []);
 
   return (
     <div className="custom-button-container">
-      <FaPen
-        onClick={onEditClick}
-        className="icon-button"
-        style={{ color: "black" }}
-      />
-      <MdDelete
-        onClick={onDeleteClick}
-        className="icon-button"
-        style={{ color: "red" }}
-      />
+      <Tooltip title="Edit">
+        <div>
+          <FaPen
+            onClick={onEditClick}
+            className="icon-button"
+            style={{ color: "black" }}
+          />
+        </div>
+      </Tooltip>
+
+      <Tooltip title="Delete">
+        <div>
+          <MdDelete
+            onClick={onDeleteClick}
+            className="icon-button"
+            style={{ color: "red" }}
+          />
+        </div>
+      </Tooltip>
       <div className="icon-button toggle">
         {!clicked && (
-          <PiToggleLeftFill
-            className="togglebutton off"
-            onClick={(event: { stopPropagation: () => void; }) => {
-              event.stopPropagation();
-              setclicked(true);
-              console.log("like button has been clicked");
-            }}
-          />
+          <Tooltip title="Toggle to make it active">
+            <div>
+              <PiToggleLeftFill
+                className="togglebutton off"
+                onClick={(event: { stopPropagation: () => void }) => {
+                  event.stopPropagation();
+                  setclicked(true);
+                  // console.lo  background-color: rgb(255, 255, 255);g("in action button, now true", clicked);
+                  if (switchActive_fun) {
+                    switchActive_fun(clicked);
+                  }
+                }}
+              />
+            </div>
+          </Tooltip>
         )}
         {clicked && (
-          <PiToggleRightFill
-            className={`togglebutton ${isActive ? "on" : "off"}`}
-            onClick={(event: { stopPropagation: () => void; }) => {
-              event.stopPropagation();
-              setclicked(!clicked);
-            }}
-          />
+          <Tooltip title="Toggle to make it inactive">
+            <div>
+              <PiToggleRightFill
+                // className={`togglebutton ${isActive ? "on" : "off"}`}
+                className={"togglebutton on"}
+                onClick={(event: { stopPropagation: () => void }) => {
+                  event.stopPropagation();
+                  setclicked(!clicked);
+                  if (switchActive_fun) {
+                    switchActive_fun(clicked);
+                  }
+                }}
+              />
+            </div>
+          </Tooltip>
         )}
       </div>
     </div>

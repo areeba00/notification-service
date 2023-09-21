@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState, useEffect, ChangeEvent } from "react";
+import React, { useState, useEffect } from "react";
 import apiClient from "../../apiService/api-client";
-import Grid1 from "../../common/Grid/Grid1";
 import TabBar from "../../common/TabBar/TabBar";
 import CommonGrid from "../../common/Grid/CommonGrid";
 import { useNavigate } from "react-router-dom";
@@ -27,9 +26,10 @@ interface ApiResponse {
 }
 interface NotificationProps {
   eventId: number | null;
+  applicationId: number | null;
 }
 
-const Notifications = ({ eventId }: NotificationProps) => {
+const Notifications = ({ eventId, applicationId }: NotificationProps) => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notifications[]>([]);
   const [originalNotifications, setOriginalNotifications] = useState<
@@ -37,40 +37,56 @@ const Notifications = ({ eventId }: NotificationProps) => {
   >([]);
   const [totalCount, setTotalCount] = useState<string>("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(3);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const [isActiveFilter, setIsActiveFilter] = useState<boolean>(true);
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined
+  );
+  const [sortBy, setSortBy] = useState<
+    "name" | "created_at" | "updated_at" | undefined
+  >(undefined);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    undefined
+  );
 
-  const handleIsActiveFilterClick = () => {
-    // Toggle the isActiveFilter state when the button is clicked
-    setIsActiveFilter(!isActiveFilter);
-
-    // Construct the API URL based on the isActiveFilter value and applicationId
-    const apiUrl = `/notifications?event_id=${eventId}&isActive=${isActiveFilter}`;
-
-    // Send the API request using your API client
-    apiClient
-      .get(apiUrl)
-      .then((response) => {
-        // Handle the response and update your applications state accordingly
-        const activeNotifications = response.data.notifications;
-        setNotifications(activeNotifications);
-        setTotalCount(response.data.TotalCount);
-      })
-      .catch((error) => {
-        console.error("Error fetching filtered notifications:", error);
-      });
+  const handleActiveClick = (isActive: boolean | undefined) => {
+    setIsActiveFilter(isActive);
+  };
+  const handleSortByClick = (
+    sortByValue: "name" | "created_at" | "updated_at" | undefined
+  ) => {
+    setSortBy(sortByValue);
   };
 
-  // Fetch notifications when the selected event ID changes
+  const handleSortOrderClick = (sortOrderValue: "asc" | "desc" | undefined) => {
+    setSortOrder(sortOrderValue);
+  };
+
   useEffect(() => {
+    // Construct the query string with optional parameters
+    const queryParams = [];
+
+    if (isActiveFilter !== undefined) {
+      queryParams.push(`isActive=${isActiveFilter}`);
+    }
+
+    if (sortBy) {
+      queryParams.push(`sortBy=${sortBy}`);
+    }
+
+    if (sortOrder) {
+      queryParams.push(`sortOrder=${sortOrder}`);
+    }
+
+    // Join the query parameters with '&' and construct the final query string
+    const queryString = queryParams.join("&");
     if (eventId !== null) {
       // Fetch events using the selected application ID
       apiClient
         .get<ApiResponse>(
           `/notifications?event_id=${eventId}&page=${
             page + 1
-          }&limit=${rowsPerPage}`
+          }&limit=${rowsPerPage}&${queryString}`
         )
         .then((response) => {
           const notificationsData = response.data.notifications;
@@ -85,7 +101,7 @@ const Notifications = ({ eventId }: NotificationProps) => {
       setNotifications([]);
     }
     setTotalCount("");
-  }, [eventId, page, rowsPerPage]);
+  }, [eventId, page, rowsPerPage, isActiveFilter, sortBy, sortOrder]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -98,8 +114,6 @@ const Notifications = ({ eventId }: NotificationProps) => {
     setRowsPerPage(newRowsPerPage);
     setPage(0); // Reset the page to 0 when changing rows per page
   };
-
-  // delete api
 
   const deleteNotification = (notification: Notifications) => {
     // Create a new array that filters out the event to be deleted
@@ -115,9 +129,8 @@ const Notifications = ({ eventId }: NotificationProps) => {
       .catch((err) => console.log(err.message));
   };
 
-  //edit api
-
   const editNotification = (updatedNotification: Notifications) => {
+    console.log("here3");
     // Create an object with the updated event data
     const updatedNotificationData = {
       name: updatedNotification.name,
@@ -125,8 +138,13 @@ const Notifications = ({ eventId }: NotificationProps) => {
       template_subject: updatedNotification.template_subject,
       template_body: updatedNotification.template_body,
       event_id: updatedNotification.event_id,
+      isActive: updatedNotification.isActive,
     };
 
+    console.log(
+      "NIFICATIONS: isActive changed to:",
+      updatedNotification.isActive
+    );
     // Send a PUT request to update the event on the server
     apiClient
       .patch(
@@ -148,12 +166,10 @@ const Notifications = ({ eventId }: NotificationProps) => {
   };
 
   const handleAddClick = () => {
-    // Replace "edit-notification" with the actual route for the "Edit Notification" page
-    const notificationAddUrl = `/add-notification/${eventId}`;
+    const notificationAddUrl = `/add-notification/${eventId}/${applicationId}`;
     navigate(notificationAddUrl);
   };
 
-  // filtering notifications
   function filterNotificationsByName(searchString: string): Notifications[] {
     if (searchString) {
       const filteredNotifications = notifications.filter((notification) => {
@@ -170,13 +186,6 @@ const Notifications = ({ eventId }: NotificationProps) => {
 
   return (
     <>
-      <TabBar
-        title={"Notifications"}
-        onAddClick={handleAddClick}
-        submitFunction={filterNotificationsByName}
-        totalCount={totalCount}
-        onIsActiveFilterClick={handleIsActiveFilterClick}
-      />
       {eventId === null && (
         <Alert severity="info" className="my-Alerts">
           <AlertTitle>Info</AlertTitle>
@@ -185,14 +194,33 @@ const Notifications = ({ eventId }: NotificationProps) => {
       )}
 
       {eventId != null && notifications.length === 0 ? (
-        <Alert severity="warning" className="my-Alerts">
-          <AlertTitle>Failed</AlertTitle>
-          No notifications found —{" "}
-          <strong>This Event has no corresponding notifications!</strong>
-        </Alert>
+        <>
+          <TabBar
+            title={"NOTIFICATIONS"}
+            onAddClick={handleAddClick}
+            submitFunction={filterNotificationsByName}
+            totalCount={totalCount}
+            onActiveClick={handleActiveClick}
+            onSortByClick={handleSortByClick}
+            onSortOrderClick={handleSortOrderClick}
+          />
+          <Alert severity="warning" className="my-Alerts">
+            No notifications found —{" "}
+            <strong>This Event has no corresponding notifications!</strong>
+          </Alert>
+        </>
       ) : (
         eventId !== null && (
           <>
+            <TabBar
+              title={"NOTIFICATIONS"}
+              onAddClick={handleAddClick}
+              submitFunction={filterNotificationsByName}
+              totalCount={totalCount}
+              onActiveClick={handleActiveClick}
+              onSortByClick={handleSortByClick}
+              onSortOrderClick={handleSortOrderClick}
+            />
             <CommonGrid
               items={notifications}
               editHandler={editNotification}

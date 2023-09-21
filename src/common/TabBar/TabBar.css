@@ -32,3 +32,11 @@
 .Search-icon :hover {
   transform: scale(1);
 }
+
+.icon-box {
+  border: 1px solid white;
+  border-radius: 4px;
+  margin-right: 15px;
+  width: auto;
+  height: 40px;
+}

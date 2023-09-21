@@ -3,6 +3,7 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { useParams } from "react-router-dom";
 import apiClient from "../../apiService/api-client";
+
 import "./NotificationEdit.css";
 import {
   Button,
@@ -16,15 +17,15 @@ import { z, ZodError } from "zod";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ReportGmailerrorredIcon from "@mui/icons-material/ReportGmailerrorred";
 import { useNavigate } from "react-router-dom";
-import { List, ListItem, ListItemText } from "@mui/material";
-import Select from "@mui/material/Select";
-import InputLabel from "@mui/material/InputLabel";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
 } from "@mui/material";
+import { Mention, MentionsInput, SuggestionDataItem } from "react-mentions";
+import { useBetween } from "use-between";
+import States from "../../States";
 
 interface Notifications {
   id?: number;
@@ -45,14 +46,12 @@ interface Tags {
 const EditNotificationPage = () => {
   // navigation route
   const navigate = useNavigate();
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMessage, setDialogMessage] = useState("");
 
-  const [tags, setTags] = useState<Tags[]>([]); // State variable for tags
+  const [tags, setTags] = useState<Tags[]>([]);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  // Fetch tags from the API when the component mounts
   useEffect(() => {
     apiClient
       .get("/tags")
@@ -62,7 +61,13 @@ const EditNotificationPage = () => {
       .catch((error) => {
         console.error("Error fetching tags:", error);
       });
-  }, []);
+  }, [tags]);
+
+  // Transform your tags array into the format expected by react-mentions
+  const mentionTags: SuggestionDataItem[] = tags.map((tag) => ({
+    id: tag.id || "", // Assuming tag.id is a string
+    display: tag.label,
+  }));
 
   // Event handler to add a selected tag to the template body
   const handleTagSelect = (tag: string) => {
@@ -88,43 +93,9 @@ const EditNotificationPage = () => {
     null
   );
 
-  // getting id's from urls
-  const { notificationId, eventId } = useParams();
+  const { selectedApplicationId } = useBetween(States);
 
-  const notificationSchema = z.object({
-    name: z.string().min(3),
-    description: z.string().min(5),
-    template_subject: z.string().min(5),
-    template_body: z.string().min(5),
-  });
-
-  const validateForm = (data: Notifications) => {
-    try {
-      notificationSchema.parse(data);
-      setNameError(null);
-      setDescriptionError(null);
-      setSubjectError(null);
-      setBodyError(null);
-      return null; // No errors
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const errorMap: Record<string, (message: string | null) => void> = {
-          name: setNameError,
-          description: setDescriptionError,
-          template_subject: setSubjectError,
-          template_body: setBodyError,
-        };
-
-        error.issues.forEach((issue) => {
-          const setErrorFunction = errorMap[issue.path[0]];
-          if (setErrorFunction) {
-            setErrorFunction(issue.message);
-          }
-        });
-      }
-      return error;
-    }
-  };
+  const { notificationId, eventId, applicationId } = useParams();
 
   useEffect(() => {
     if (notificationId) {
@@ -157,13 +128,52 @@ const EditNotificationPage = () => {
     };
 
     // Validate the form data
-    const validationError = validateForm(formData);
+    let hasError = false;
 
-    if (validationError) {
-      setValidationErrors(validationError as ZodError<any>);
+    // Check if name is empty
+    if (!formData.name) {
+      setNameError("Name is required.");
+      hasError = true;
+    } else if (formData.name.length < 3) {
+      setNameError("Name must contain at least 3 characters.");
+      hasError = true;
     } else {
-      setValidationErrors(null);
+      setNameError(null);
+    }
 
+    // Check if description is empty
+    if (!formData.description) {
+      setDescriptionError("Description is required.");
+      hasError = true;
+    } else if (formData.description.length < 5) {
+      setDescriptionError("Description must contain at least 5 characters.");
+      hasError = true;
+    } else {
+      setDescriptionError(null);
+    }
+
+    // Check if subject is empty
+    if (!formData.template_subject) {
+      setSubjectError("Template Subject is required.");
+      hasError = true;
+    } else if (formData.template_subject.length < 5) {
+      setSubjectError("Template Subject must contain at least 5 characters.");
+      hasError = true;
+    } else {
+      setSubjectError(null);
+    }
+
+    // Check if body is empty
+    if (!formData.template_body) {
+      setBodyError("Template Body is required.");
+      hasError = true;
+    } else if (formData.template_body.length < 5) {
+      setBodyError("Template Body must contain at least 5 characters.");
+      hasError = true;
+    } else {
+      setBodyError(null);
+    }
+    if (!hasError) {
       if (notificationId) {
         // Editing an existing notification, send a PATCH request
         apiClient
@@ -173,9 +183,8 @@ const EditNotificationPage = () => {
             setIsDialogOpen(true);
           })
           .catch((error) => {
-            setDialogMessage("Error updating notification.");
+            setDialogMessage(error.response.data);
             setIsDialogOpen(true);
-            console.error("Error updating notification:", error);
           });
       } else {
         const eventIdAsNumber = eventId ? parseInt(eventId, 10) : undefined;
@@ -189,14 +198,10 @@ const EditNotificationPage = () => {
           .then((response) => {
             setDialogMessage("Notification added successfully!");
             setIsDialogOpen(true);
-            console.log("Notification added successfully!");
-            // You can navigate back to the list or perform any other action here
           })
           .catch((error) => {
-            setDialogMessage("Error adding notification.");
+            setDialogMessage(error.response.data);
             setIsDialogOpen(true);
-
-            console.error("Error adding notification:", error);
           });
       }
     }
@@ -205,7 +210,9 @@ const EditNotificationPage = () => {
   // navigation back
   const handleCancelButtonClick = () => {
     // Navigate back to the desired URL when the cancel button is clicked
-    navigate("/Dashboard");
+    navigate("/Dashboard", {
+      // state: { eventId: eventId, applicationId: applicationId },
+    });
   };
 
   const handleDialogClose = () => {
@@ -217,6 +224,26 @@ const EditNotificationPage = () => {
     setPreview(`Subject: ${subject}\n${body}`);
   }, [subject, body]);
 
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+    setNameError(null);
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDescription(e.target.value);
+    setDescriptionError(null);
+  };
+
+  const handleSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSubject(e.target.value);
+    setSubjectError(null);
+  };
+
+  const handleBodyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBody(e.target.value);
+    setBodyError(null);
+  };
+
   return (
     <>
       <Grid container spacing={2} className="grid-container">
@@ -224,18 +251,20 @@ const EditNotificationPage = () => {
           <form onSubmit={handleFormSubmit}>
             <TextField
               label="Name"
+              required
               variant="outlined"
               fullWidth
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={handleNameChange}
             />
             {nameError && <div className="validation-error">{nameError}</div>}
             <TextField
               label="Description"
+              required
               variant="outlined"
               fullWidth
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={handleDescriptionChange}
             />
             {descriptionError && (
               <div className="validation-error">{descriptionError}</div>
@@ -243,45 +272,35 @@ const EditNotificationPage = () => {
 
             <TextField
               label="Template Subject"
+              required
               variant="outlined"
               fullWidth
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
+              onChange={handleSubjectChange}
             />
             {subjectError && (
               <div className="validation-error">{subjectError}</div>
             )}
-            <TextField
-              label="Template Body"
-              placeholder="Body"
-              multiline
-              rows={5}
-              fullWidth
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              // value={templateBody}
-              // onChange={handleTemplateBodyChange}
-            />
-            {bodyError && <div className="validation-error">{bodyError}</div>}
 
-            <FormControl fullWidth>
-              <InputLabel htmlFor="tag-select">Select a tag</InputLabel>
-              <Select
-                onChange={(e) => handleTagSelect(e.target.value)}
-                value={selectedTag || ""}
-                style={{ width: "100%" }}
-                labelId="tag-select"
-              >
-                <MenuItem value="" disabled>
-                  Select a tag
-                </MenuItem>
-                {tags.map((tag) => (
-                  <MenuItem key={tag.id} value={tag.label}>
-                    {tag.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <MentionsInput
+              className="custom-mentions-input"
+              required
+              value={body}
+              onChange={handleBodyChange}
+              placeholder="Template Body"
+              style={{ height: "calc(6 * 1.5em)" }}
+            >
+              <Mention
+                trigger="{"
+                data={mentionTags} // Use the transformed mentionTags array
+                renderSuggestion={(suggestion, search, highlightedDisplay) => (
+                  <div className="custom-mention ">{highlightedDisplay}</div>
+                )}
+                displayTransform={(id, display) => `{${display}}`}
+                markup="{__display__}"
+              />
+            </MentionsInput>
+            {bodyError && <div className="validation-error">{bodyError}</div>}
             <div className="buttonContainer">
               <Button
                 type="submit"
@@ -307,15 +326,24 @@ const EditNotificationPage = () => {
         </Grid>
         <Grid item xs={6} className="grid-right">
           <Typography variant="body1">
-            Subject: {subject}
+            {subject}
             <br /> <br />
-            Body: {body}
+            {body}
           </Typography>
         </Grid>
       </Grid>
-      <Dialog open={isDialogOpen} onClose={handleDialogClose} maxWidth="md">
+      <Dialog open={isDialogOpen} onClose={handleDialogClose} maxWidth="lg">
         <DialogContent>
-          <Typography>{dialogMessage}</Typography>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {dialogMessage.includes("successfully") ? (
+              <VerifiedIcon style={{ color: "green" }} fontSize="large" />
+            ) : (
+              <ReportGmailerrorredIcon color="error" fontSize="large" />
+            )}
+            <Typography style={{ marginLeft: "10px" }}>
+              {dialogMessage}
+            </Typography>
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDialogClose} color="primary" autoFocus>

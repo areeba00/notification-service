@@ -1,11 +1,15 @@
 import React, { ChangeEvent, useState, useEffect } from "react";
 import IconButton from "@mui/material/IconButton";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import Tooltip from '@mui/material/Tooltip';
 import { IoSearchCircleSharp } from "react-icons/io5";
 import "./TabBar.css";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import Popover from "@mui/material/Popover"; // Import the Popover component
-import Button from "@mui/material/Button";
+import SortByAlphaIcon from "@mui/icons-material/SortByAlpha";
+import SortIcon from "@mui/icons-material/Sort";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+
 interface Applications {
   id: number;
   name: string;
@@ -20,33 +24,52 @@ interface Props {
   onAddClick: () => void;
   submitFunction: (searchString: string) => Applications[];
   totalCount: string;
-  onIsActiveFilterClick: () => void;
+  onActiveClick: (isActive: boolean | undefined) => void;
+  onSortByClick: (
+    sortByValue: "name" | "created_at" | "updated_at" | undefined
+  ) => void;
+  onSortOrderClick: (sortOrderValue: "asc" | "desc" | undefined) => void;
 }
 
 const TabBar = (props: Props) => {
-  const handleIsActiveFilterClick = () => {
-    // Call the parent component's callback function when "isActive" is clicked
-    props.onIsActiveFilterClick();
-  };
-  const [isPopoverOpen, setPopoverOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-
-  const handleFilterIconClick = (event: React.MouseEvent<HTMLElement>) => {
-    setPopoverOpen(true);
-    setAnchorEl(event.currentTarget);
+  const handleActiveClick = () => {
+    props.onActiveClick(true);
   };
 
-  const handleClosePopover = () => {
-    setPopoverOpen(false);
-    setAnchorEl(null);
+  const handleInactiveClick = () => {
+    props.onActiveClick(false);
   };
-  const iconStyle = {
-    fontSize: "30px", // Set the font size
-    color: "white",
+
+  const handleAllClick = () => {
+    props.onActiveClick(undefined);
   };
+
+  const handleSortByNameClick = () => {
+    props.onSortByClick("name");
+  };
+
+  const handleSortByCreatedAtClick = () => {
+    props.onSortByClick("created_at");
+  };
+
+  const handleSortByUpdatedAtClick = () => {
+    props.onSortByClick("updated_at");
+  };
+
+  const handleSortOrderAscClick = () => {
+    props.onSortOrderClick("asc");
+  };
+
+  const handleSortOrderDescClick = () => {
+    props.onSortOrderClick("desc");
+  };
+
+  // const handleSortOrderResetClick = () => {
+
+  //   props.onSortOrderClick(undefined);
+  // };
 
   const [formData, setFormData] = useState({
-    // Initialize your form fields here
     name: "",
   });
 
@@ -80,7 +103,42 @@ const TabBar = (props: Props) => {
       setSearchActive(false);
       props.submitFunction(""); // Submit an empty string to show all applications
     }
-  }, [formData.name]);
+  }, [formData.name, props]);
+
+  const [filterMenuAnchor, setFilterMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
+
+  const [sortMenuAnchor, setSortMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
+
+  const [sortOrderMenuAnchor, setSortOrderMenuAnchor] =
+    useState<null | HTMLElement>(null);
+
+  const handleFilterMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setFilterMenuAnchor(event.currentTarget);
+  };
+
+  const handleFilterMenuClose = () => {
+    setFilterMenuAnchor(null);
+  };
+
+  const handleSortMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setSortMenuAnchor(event.currentTarget);
+  };
+
+  const handleSortMenuClose = () => {
+    setSortMenuAnchor(null);
+  };
+
+  const handleSortOrderMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setSortOrderMenuAnchor(event.currentTarget);
+  };
+
+  const handleSortOrderMenuClose = () => {
+    setSortOrderMenuAnchor(null);
+  };
 
   return (
     <nav
@@ -88,7 +146,7 @@ const TabBar = (props: Props) => {
         isSearchActive ? "search-active" : ""
       }`}
     >
-      <div className="container">
+      <div className="container-fluid">
         <a
           className="navbar-brand"
           style={{ fontSize: "21px", color: "white" }}
@@ -100,49 +158,90 @@ const TabBar = (props: Props) => {
             </span>
           )}
         </a>
-        {/* Add the FilterAltIcon */}
-        <IconButton style={iconStyle} onClick={handleFilterIconClick}>
-          <FilterAltIcon />
-        </IconButton>
-        <Popover
-          open={isPopoverOpen}
-          anchorEl={anchorEl}
-          onClose={handleClosePopover}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "right",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
-        >
-          <div style={{ padding: "10px" }}>
-            <Button color="primary" onClick={handleIsActiveFilterClick}>
-              isActive{" "}
-            </Button>
+
+        <div style={{ display: "flex" }}>
+          <form className="d-flex search" onSubmit={handleSubmit}>
+            <input
+              className="form-control"
+              type="search"
+              name="name" // Make sure the 'name' attribute matches your state key
+              placeholder="Search"
+              aria-label="Search"
+              value={formData.name}
+              onChange={handleChange} // Handle changes in the search input
+            />
+
+            <button className="Search-button" type="submit">
+              {/* Search */}
+              <IoSearchCircleSharp
+                className="Search-icon"
+                style={{ color: "white" }}
+              />
+            </button>
+          </form>
+          <div className="icon-box">
+            <Tooltip title="Add">
+              <IconButton onClick={props.onAddClick} style={{ color: "white" }}>
+                <AddCircleOutlineIcon />
+              </IconButton>
+            </Tooltip>
           </div>
-        </Popover>
+          <div className="icon-box">
+            <Tooltip title="Filter By">
+              <IconButton
+                onClick={handleFilterMenuOpen}
+                style={{ color: "white" }}
+              >
+              <FilterAltIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
+          <div className="icon-box">
+            <Tooltip title="Sort On">
+              <IconButton onClick={handleSortMenuOpen} style={{ color: "white" }}>
+                <SortByAlphaIcon />
+              </IconButton>
+            </Tooltip>
+            
+          </div>
+          <div className="icon-box">
+            <Tooltip title="Sort By">
+              <IconButton
+                onClick={handleSortOrderMenuOpen}
+                style={{ color: "white" }}
+              >
+                <SortIcon />
+              </IconButton>
+            </Tooltip>
+          </div>
+        </div>
 
-        <form className="d-flex search" onSubmit={handleSubmit}>
-          <input
-            className="form-control mb-2"
-            type="search"
-            name="name" // Make sure the 'name' attribute matches your state key
-            placeholder="Search"
-            aria-label="Search"
-            value={formData.name}
-            onChange={handleChange} // Handle changes in the search input
-          />
-
-          <button className="Search-button" type="submit">
-            {/* Search */}
-            <IoSearchCircleSharp className="Search-icon" />
-          </button>
-          <IconButton style={iconStyle} onClick={props.onAddClick}>
-            <AddCircleOutlineIcon />
-          </IconButton>
-        </form>
+        <Menu
+          anchorEl={filterMenuAnchor}
+          open={Boolean(filterMenuAnchor)}
+          onClose={handleFilterMenuClose}
+        >
+          <MenuItem onClick={handleActiveClick}>Active</MenuItem>
+          <MenuItem onClick={handleInactiveClick}>Inactive</MenuItem>
+          <MenuItem onClick={handleAllClick}>All</MenuItem>
+        </Menu>
+        <Menu
+          anchorEl={sortMenuAnchor}
+          open={Boolean(sortMenuAnchor)}
+          onClose={handleSortMenuClose}
+        >
+          <MenuItem onClick={handleSortByNameClick}>name</MenuItem>
+          <MenuItem onClick={handleSortByCreatedAtClick}>created_at</MenuItem>
+          <MenuItem onClick={handleSortByUpdatedAtClick}>updated_at</MenuItem>
+        </Menu>
+        <Menu
+          anchorEl={sortOrderMenuAnchor}
+          open={Boolean(sortOrderMenuAnchor)}
+          onClose={handleSortOrderMenuClose}
+        >
+          <MenuItem onClick={handleSortOrderAscClick}>ASC</MenuItem>
+          <MenuItem onClick={handleSortOrderDescClick}>DESC</MenuItem>
+        </Menu>
       </div>
     </nav>
   );

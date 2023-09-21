@@ -11,7 +11,6 @@ const logOut = () => {
 // Create a custom ProtectedRoute component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem("token");
-  console.log(token);
 
   // If the user is authenticated (token exists), render the children.
   // Otherwise, redirect to the login page.
@@ -34,7 +33,7 @@ const router = createBrowserRouter([
     element: <NotificationEdit />,
   },
   {
-    path: "/add-notification/:eventId",
+    path: "/add-notification/:eventId/:applicationId",
     element: <NotificationEdit />,
   },
   {

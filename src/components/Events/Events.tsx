@@ -5,11 +5,18 @@ import TabBar from "../../common/TabBar/TabBar";
 import AddDialog from "../../common/AddDialog/AddDialog";
 import CommonGrid from "../../common/Grid/CommonGrid";
 import Notifications from "../Notifications/Notifications";
-import CircularProgress from "@mui/material/CircularProgress"; // Adjust the import path if needed
+import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import AlertTitle from "@mui/material/AlertTitle";
 import { TablePagination } from "@mui/material";
+import { useBetween } from "use-between";
+import States from "../../States";
 
+// Define your alert types
+const ALERT_TYPES = {
+  SUCCESS: "success",
+  ERROR: "error",
+};
 interface Events {
   id: number;
   name: string;
@@ -29,40 +36,61 @@ interface EventsProps {
 }
 
 const Events = ({ applicationId }: EventsProps) => {
+  const { selectedEventId, setSelectedEventId } = useBetween(States);
+
   const [events, setEvents] = useState<Events[]>([]);
   const [originalEvents, setOriginalEvents] = useState<Events[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
+  // const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
   const [totalCount, setTotalCount] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(3);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
 
-  const [isActiveFilter, setIsActiveFilter] = useState<boolean>(true);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertType, setAlertType] = useState<string | null>(null);
 
-  const handleIsActiveFilterClick = () => {
-    // Toggle the isActiveFilter state when the button is clicked
-    setIsActiveFilter(!isActiveFilter);
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined
+  );
+  const [sortBy, setSortBy] = useState<
+    "name" | "created_at" | "updated_at" | undefined
+  >(undefined);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    undefined
+  );
 
-    // Construct the API URL based on the isActiveFilter value and applicationId
-    const apiUrl = `/events?application_id=${applicationId}&isActive=${isActiveFilter}`;
-
-    // Send the API request using your API client
-    apiClient
-      .get(apiUrl)
-      .then((response) => {
-        // Handle the response and update your applications state accordingly
-        const activeEvents = response.data.events;
-        setOriginalEvents(activeEvents);
-        setEvents(activeEvents);
-        setTotalCount(response.data.TotalCount);
-      })
-      .catch((error) => {
-        console.error("Error fetching filtered events:", error);
-      });
+  const handleActiveClick = (isActive: boolean | undefined) => {
+    setIsActiveFilter(isActive);
+  };
+  const handleSortByClick = (
+    sortByValue: "name" | "created_at" | "updated_at" | undefined
+  ) => {
+    setSortBy(sortByValue);
   };
 
-  // Fetch events when the selected application ID changes
+  const handleSortOrderClick = (sortOrderValue: "asc" | "desc" | undefined) => {
+    setSortOrder(sortOrderValue);
+  };
   useEffect(() => {
+    // Construct the query string with optional parameters
+    const queryParams = [];
+
+    if (isActiveFilter !== undefined) {
+      queryParams.push(`isActive=${isActiveFilter}`);
+    }
+
+    if (sortBy) {
+      queryParams.push(`sortBy=${sortBy}`);
+    }
+
+    if (sortOrder) {
+      queryParams.push(`sortOrder=${sortOrder}`);
+    }
+
+    // Join the query parameters with '&' and construct the final query string
+    const queryString = queryParams.join("&");
+
     setIsLoading(true);
 
     if (applicationId !== null) {
@@ -72,7 +100,7 @@ const Events = ({ applicationId }: EventsProps) => {
         .get<ApiResponse>(
           `/events?application_id=${applicationId}&page=${
             page + 1
-          }&limit=${rowsPerPage}`
+          }&limit=${rowsPerPage}&${queryString}`
         )
         .then((response) => {
           const eventsData = response.data.events;
@@ -91,7 +119,7 @@ const Events = ({ applicationId }: EventsProps) => {
       setIsLoading(false);
       setTotalCount("");
     }
-  }, [applicationId, page, rowsPerPage]);
+  }, [applicationId, page, rowsPerPage, isActiveFilter, sortBy, sortOrder]);
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -122,7 +150,10 @@ const Events = ({ applicationId }: EventsProps) => {
       name: updatedEvent.name,
       description: updatedEvent.description,
       application_id: updatedEvent.application_id, // Include the applicationId from props
+      isActive: updatedEvent.isActive,
     };
+
+    console.log("In EVENT: ", updatedEvent);
 
     // Send a PUT request to update the event on the server
     apiClient
@@ -139,7 +170,6 @@ const Events = ({ applicationId }: EventsProps) => {
       });
   };
 
-  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -177,19 +207,28 @@ const Events = ({ applicationId }: EventsProps) => {
         // Assuming the server returns the added application data
         const addedEvent = response.data;
         setEvents([...events, addedEvent]);
+        setAlertMessage("Data added successfully!");
+        setAlertType(ALERT_TYPES.SUCCESS);
         handleCloseAddDialog();
       })
       .catch((error) => {
         console.error("Error adding event:", error);
+        setAlertMessage(error.response.data);
+        setAlertType(ALERT_TYPES.ERROR);
       });
   };
 
-  // Step 2: Handle checkbox click
+  useEffect(() => {
+    if (!isAddDialogOpen) {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
+  }, [isAddDialogOpen]);
+
   const handleCheckboxClick = (eventId: number) => {
     setSelectedEventId(eventId); // Update the selected event ID state
   };
 
-  // filtering events
   function filterEventsByName(searchString: string): Events[] {
     if (searchString) {
       const filteredEvents = events.filter((event) => {
@@ -206,13 +245,6 @@ const Events = ({ applicationId }: EventsProps) => {
 
   return (
     <>
-      <TabBar
-        title={"Events"}
-        onAddClick={handleAddClick}
-        submitFunction={filterEventsByName}
-        totalCount={totalCount}
-        onIsActiveFilterClick={handleIsActiveFilterClick}
-      />
       {isLoading && (
         <CircularProgress /> // Show loading indicator while fetching data
       )}
@@ -223,15 +255,45 @@ const Events = ({ applicationId }: EventsProps) => {
         </Alert>
       )}
       {applicationId !== null && events.length === 0 ? (
-        <Alert severity="warning" className="my-Alerts">
-          <AlertTitle>Failed</AlertTitle>
-          No events found —{" "}
-          <strong>This Application has no corresponding events!</strong>
-        </Alert>
+        <>
+          <TabBar
+            title={"EVENTS"}
+            onAddClick={handleAddClick}
+            submitFunction={filterEventsByName}
+            totalCount={totalCount}
+            onActiveClick={handleActiveClick}
+            onSortByClick={handleSortByClick}
+            onSortOrderClick={handleSortOrderClick}
+          />
+          <Alert severity="warning" className="my-Alerts">
+            No events found —{" "}
+            <strong>This Application has no corresponding events!</strong>
+          </Alert>
+
+          <AddDialog
+            open={isAddDialogOpen}
+            onClose={handleCloseAddDialog}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleAdd={handleAddEvent}
+            title="Add Event"
+            alertMessage={alertMessage} // Pass the alert message as a prop
+            alertType={alertType}
+          />
+        </>
       ) : (
         applicationId != null &&
         !isLoading && (
           <>
+            <TabBar
+              title={"EVENTS"}
+              onAddClick={handleAddClick}
+              submitFunction={filterEventsByName}
+              totalCount={totalCount}
+              onActiveClick={handleActiveClick}
+              onSortByClick={handleSortByClick}
+              onSortOrderClick={handleSortOrderClick}
+            />
             <CommonGrid
               items={events}
               deleteHandler={deleteEvent}
@@ -247,15 +309,11 @@ const Events = ({ applicationId }: EventsProps) => {
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
             />
-            <AddDialog
-              open={isAddDialogOpen}
-              onClose={handleCloseAddDialog}
-              formData={formData}
-              handleInputChange={handleInputChange}
-              handleAdd={handleAddEvent}
-              title="Add Event"
+
+            <Notifications
+              eventId={selectedEventId}
+              applicationId={applicationId}
             />
-            <Notifications eventId={selectedEventId} />
           </>
         )
       )}

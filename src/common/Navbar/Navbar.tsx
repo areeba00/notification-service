@@ -28,7 +28,10 @@ function Navbar() {
   const id = open ? "user-popover" : undefined;
 
   return (
-    <nav className="navbar navbar-light custom-navbar">
+    <nav
+      className="navbar navbar-light custom-navbar"
+      // style={{ position: "fixed", width: "100%" }}
+    >
       <div>
         <a className="navbar-brand" href="#">
           <img
@@ -42,7 +45,7 @@ function Navbar() {
       <div className="navbar-icons">
         <IconButton
           aria-describedby={id}
-          style={{ marginBottom: "50px" }}
+          style={{ marginBottom: "50px", color: "white" }}
           onClick={handleProfileClick}
         >
           <AccountCircleIcon fontSize="large" />

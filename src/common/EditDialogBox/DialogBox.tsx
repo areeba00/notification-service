@@ -5,6 +5,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import { Alert } from "@mui/material";
 
 interface EditDialogProps {
   open: boolean;
@@ -15,6 +16,8 @@ interface EditDialogProps {
   };
   handleInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
   handleSave: () => void;
+  alertMessage: string | null;
+  alertType: string | null;
 }
 
 const DialogBox: React.FC<EditDialogProps> = ({
@@ -23,6 +26,8 @@ const DialogBox: React.FC<EditDialogProps> = ({
   formData,
   handleInputChange,
   handleSave,
+  alertMessage, // Access alertMessage from props
+  alertType,
 }) => {
   const [nameError, setNameError] = useState<string>("");
   const [descriptionError, setDescriptionError] = useState<string>("");
@@ -66,6 +71,9 @@ const DialogBox: React.FC<EditDialogProps> = ({
         Edit Application
       </DialogTitle>
       <DialogContent style={{ padding: "26px" }}>
+        {alertMessage && alertType && (
+          <Alert severity={alertType}>{alertMessage}</Alert>
+        )}
         <TextField
           label="Name"
           name="name"

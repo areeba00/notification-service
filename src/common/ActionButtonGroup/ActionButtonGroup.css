@@ -41,10 +41,10 @@
   /* font-size: 30px; */
 }
 
-.on{
+.togglebutton.on{
   color: rgb(1, 223, 20)
 }
 
-.off{
+.togglebutton.off{
   color:red
 }

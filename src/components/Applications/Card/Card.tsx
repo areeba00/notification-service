@@ -5,6 +5,11 @@ import ActionButtonGroup from "../../../common/ActionButtonGroup/ActionButtonGro
 import DialogBox from "../../../common/EditDialogBox/DialogBox";
 import DeleteDialog from "../../../common/DeleteDialog/DeleteDialog";
 
+// Define your alert types
+const ALERT_TYPES = {
+  SUCCESS: "success",
+  ERROR: "error",
+};
 interface Applications {
   id: number;
   name: string;
@@ -42,6 +47,9 @@ Props) => {
   // Clicked state for the card
   const [isCardClicked, setIsCardClicked] = useState(false);
 
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertType, setAlertType] = useState<string | null>(null);
+
   // Function to open the delete confirmation dialog
   const openDeleteConfirmation = (application: Applications) => {
     setApplicationToDelete(application);
@@ -49,9 +57,7 @@ Props) => {
   };
 
   useEffect(() => {
-    if (clicked_id !== card_id) {
-      setIsCardClicked(false);
-    }
+    setIsCardClicked(clicked_id === card_id);
   }, [clicked_id, card_id]);
   // Function to close the delete confirmation dialog
   const closeDeleteConfirmation = () => {
@@ -75,7 +81,6 @@ Props) => {
     name: "",
     description: "",
   });
-
 
   const openModal = (applications: Applications) => {
     setFormData({
@@ -105,9 +110,57 @@ Props) => {
     };
 
     // Call the editHandler to update the application
-    editHandler(editedApplication);
-    closeModal();
+    try {
+      editHandler(editedApplication);
+
+      // On success, set the success alert
+      setAlertMessage("Application updated successfully!");
+      setAlertType(ALERT_TYPES.SUCCESS);
+
+      // Close the modal after a brief delay (you can adjust the delay)
+      setTimeout(() => {
+        closeModal();
+      }, 1000);
+    } catch (error) {
+      // On error, set the error alert
+      setAlertMessage("Error updating application. Please try again.");
+      setAlertType(ALERT_TYPES.ERROR);
+    }
   };
+
+  // FUNCTION TO SWITCH THE ACTIVE STATE
+  const switchActive_fun = (active: boolean) => {
+    const editedApplication: Applications = {
+      ...applications,
+      isActive: !active,
+    };
+
+    // Call the editHandler to update the application
+    try {
+      editHandler(editedApplication);
+
+      // On success, set the success alert
+      setAlertMessage("Application updated successfully!");
+      setAlertType(ALERT_TYPES.SUCCESS);
+
+      // Close the modal after a brief delay (you can adjust the delay)
+      setTimeout(() => {
+        closeModal();
+      }, 1000);
+    } catch (error) {
+      // On error, set the error alert
+      setAlertMessage("Error updating application. Please try again.");
+      setAlertType(ALERT_TYPES.ERROR);
+    }
+  };
+
+  // Reset the alert when the dialog is opened or closed
+  useEffect(() => {
+    if (!isModalOpen) {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
+  }, [isModalOpen]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedApplicationId, setSelectedApplicationId] = useState<
@@ -137,13 +190,11 @@ Props) => {
       >
         <div className="C-infos" key={applications.id}>
           <div className="C-text-data">
-            
             <h2 className="C-title">{applications.name}</h2>
-            <br></br><br></br><br></br>
-            <p className="C-txt">
-              {applications.description}
-              {/* Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus minus mollitia magnam ipsa aliquid. Dolore nesciunt quam voluptate, sunt doloremque sit laudantium architecto maxime laboriosam? Nesciunt aut excepturi fugiat molestiae. */}
-            </p>
+            <br></br>
+            <br></br>
+            <br></br>
+            <p className="C-txt">{applications.description}</p>
           </div>
           <br></br>
           <div className="C-action-buttons">
@@ -151,26 +202,30 @@ Props) => {
               onEditClick={() => openModal(applications)}
               onDeleteClick={() => openDeleteConfirmation(applications)}
               isActive={applications.isActive}
+              switchActive_fun={switchActive_fun}
             />
           </div>
         </div>
       </article>
-        <div>
-          <DialogBox
-            open={isModalOpen}
-            onClose={closeModal}
-            formData={formData}
-            handleInputChange={handleInputChange}
-            handleSave={handleSave}
-          />
-        </div>
-        <div>
-          <DeleteDialog
-            open={isDeleteConfirmationOpen}
-            onClose={closeDeleteConfirmation}
-            onConfirm={confirmDelete}
-          />
-        </div>
+      <div>
+        <DialogBox
+          open={isModalOpen}
+          onClose={closeModal}
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleSave={handleSave}
+          alertMessage={alertMessage} // Pass the alert message as a prop
+          alertType={alertType}
+        />
+      </div>
+      <div>
+        <DeleteDialog
+          open={isDeleteConfirmationOpen}
+          onClose={closeDeleteConfirmation}
+          onConfirm={confirmDelete}
+          title={"application"}
+        />
+      </div>
     </>
   );
 };

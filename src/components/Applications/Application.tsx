@@ -8,7 +8,15 @@ import "./CardSlider/CardSlider.css";
 import Events from "../Events/Events";
 import TabBar from "../../common/TabBar/TabBar";
 import AddDialog from "../../common/AddDialog/AddDialog";
+import { Location } from "history";
+import { useBetween } from "use-between";
+import States from "../../States";
 
+// Define your alert types
+const ALERT_TYPES = {
+  SUCCESS: "success",
+  ERROR: "error",
+};
 interface Applications {
   id: number;
   name: string;
@@ -22,14 +30,33 @@ interface ApiResponse {
   TotalCount: string;
   applications: Applications[];
 }
+interface LocationState {
+  applicationId: number;
+  eventId: number;
+}
 
-function Applications() {
+interface ApplicationsProps {
+  locationState: LocationState;
+}
+const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
+  // const { applicationId, eventId } = locationState;
   const [applications, setApplications] = useState<Applications[]>([]);
   const [totalCount, setTotalCount] = useState<string>("");
 
-  const [selectedApplicationId, setSelectedApplicationId] = useState<
-    number | null
-  >(null);
+  // const [selectedApplicationId, setSelectedApplicationId] = useState<
+  //   number | null
+  // >(null);
+
+  const {
+    selectedApplicationId,
+    selectedEventId,
+    setSelectedApplicationId,
+    clikcedCardID,
+    setClickedCardID,
+  } = useBetween(States);
+
+  // console.log("appsel", selectedApplicationId, "card", clikcedCardID);
+  // console.log("ev", selectedEventId);
 
   const [filtered_Applications, setfiltered_Applications] = useState<
     Applications[]
@@ -39,31 +66,35 @@ function Applications() {
   // Add a state to control the visibility of events
   const [showEvents, setShowEvents] = useState(false);
 
-  const [clikcedCardID, setClickedCardID] = useState<number>(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleCards] = useState<number>(calculateVisibleCards());
+  const isAtFirstCard = currentIndex === 0;
+  const isAtLastCard = currentIndex === filtered_Applications.length - 1;
 
-  const [isActiveFilter, setIsActiveFilter] = useState<boolean>(true);
+  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertType, setAlertType] = useState<string | null>(null);
 
-  const handleIsActiveFilterClick = () => {
-    // Toggle the isActiveFilter state when the button is clicked
-    setIsActiveFilter(!isActiveFilter);
+  //   // Toggle the isActiveFilter state when the button is clicked
+  //   setIsActiveFilter(!isActiveFilter);
 
-    // Construct the API URL based on the isActiveFilter value
-    const apiUrl = `/applications?isActive=${isActiveFilter}`;
+  //   // Construct the API URL based on the isActiveFilter value
+  //   const apiUrl = `/applications?isActive=${isActiveFilter}`;
 
-    // Send the API request using your API client
-    apiClient
-      .get(apiUrl)
-      .then((response) => {
-        // Handle the response and update your applications state accordingly
-        const activeapps = response.data.applications;
-        setApplications(activeapps);
-        setfiltered_Applications(activeapps);
-        setTotalCount(response.data.TotalCount);
-      })
-      .catch((error) => {
-        console.error("Error fetching filtered applications:", error);
-      });
-  };
+  //   // Send the API request using your API client
+  //   apiClient
+  //     .get(apiUrl)
+  //     .then((response) => {
+  //       // Handle the response and update your applications state accordingly
+  //       const activeapps = response.data.applications;
+  //       setApplications(activeapps);
+  //       setfiltered_Applications(activeapps);
+  //       setTotalCount(response.data.TotalCount);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching filtered applications:", error);
+  //     });
+  // };
 
   const handleCardClick = (appId: number) => {
     // Toggle the display of events
@@ -76,9 +107,52 @@ function Applications() {
     // setClickedCardID(clikcedCardID ? 0 : clikcedCardID);
   };
 
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined
+  );
+  const [sortBy, setSortBy] = useState<
+    "name" | "created_at" | "updated_at" | undefined
+  >(undefined);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    undefined
+  );
+
+  const handleActiveClick = (isActive: boolean | undefined) => {
+    setIsActiveFilter(isActive);
+  };
+  const handleSortByClick = (
+    sortByValue: "name" | "created_at" | "updated_at" | undefined
+  ) => {
+    setSortBy(sortByValue);
+  };
+
+  const handleSortOrderClick = (sortOrderValue: "asc" | "desc" | undefined) => {
+    setSortOrder(sortOrderValue);
+  };
+
   useEffect(() => {
+    // Construct the query string with optional parameters
+    const queryParams = [];
+
+    if (isActiveFilter !== undefined) {
+      queryParams.push(`isActive=${isActiveFilter}`);
+    }
+
+    if (sortBy) {
+      queryParams.push(`sortBy=${sortBy}`);
+    }
+
+    if (sortOrder) {
+      queryParams.push(`sortOrder=${sortOrder}`);
+    }
+
+    // Construct the final URL
+    const queryString = queryParams.join("&");
+    const url = `/applications${queryString ? `?${queryString}` : ""}`;
+
+    // Fetch data with the updated query parameters
     apiClient
-      .get<ApiResponse>("/applications")
+      .get<ApiResponse>(url)
       .then((res) => {
         setApplications(res.data.applications);
         setfiltered_Applications(res.data.applications);
@@ -90,9 +164,7 @@ function Applications() {
         console.error("Error fetching data:", error);
         setLoading(false);
       });
-  }, []);
-
-  // FILTERING APPLICATIONS
+  }, [isActiveFilter, sortBy, sortOrder]);
 
   function filterObjectsByName(searchString: string): Applications[] {
     if (searchString) {
@@ -110,6 +182,36 @@ function Applications() {
 
     return filtered_Applications;
   }
+
+  // const sortApps = (sortCriteria: "created_at" | "updated_at" | null) => {
+  //   // Create a copy of the applications array
+  //   const filteredApplicationsCopy = [...applications];
+
+  //   // Toggle the sorting order if the same sorting criteria is clicked again
+  //   if (sortCriteria === sortingCriteria) {
+  //     filteredApplicationsCopy.reverse(); // Reverse the order
+  //     setSortingCriteria(null); // Reset sorting criteria
+  //   } else {
+  //     // Sort applications based on sortCriteria
+  //     if (sortCriteria) {
+  //       filteredApplicationsCopy.sort((a, b) => {
+  //         if (sortCriteria === "created_at") {
+  //           return a.created_at.localeCompare(b.created_at);
+  //         } else if (sortCriteria === "updated_at") {
+  //           return a.updated_at.localeCompare(b.updated_at);
+  //         }
+  //         return 0;
+  //       });
+  //       // Update the sorting criteria state
+  //       setSortingCriteria(sortCriteria);
+  //     }
+  //   }
+
+  //   // Update the state with the sorted applications
+  //   setfiltered_Applications(filteredApplicationsCopy);
+
+  //   return filteredApplicationsCopy;
+  // };
 
   const deleteApplication = (application: Applications) => {
     // Create a new array that filters out the application to be deleted
@@ -133,35 +235,28 @@ function Applications() {
   const editApplication = (updatedApplication: Applications) => {
     // Remove the "id" field from the payload
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, created_at, updated_at, isActive, ...dataWithoutId } =
-      updatedApplication;
+    const { id, created_at, updated_at, ...dataWithoutId } = updatedApplication;
 
-    const updatedApps = applications.map((app) =>
-      app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
-    );
-    setApplications(updatedApps);
-
-    const updated_filtered_apps = filtered_Applications.map((app) =>
-      app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
-    );
-    setfiltered_Applications(updated_filtered_apps);
-
-    // Send a PUT request to update the application on the server
+    console.log("hdahdkljkd", updatedApplication.id);
     apiClient
-      .patch("/applications/" + updatedApplication.id, dataWithoutId) // Send the updated data without the "id"
+      .put("/applications/" + updatedApplication.id, dataWithoutId)
       .then((response) => {
+        const updatedApps = applications.map((app) =>
+          app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
+        );
+        setApplications(updatedApps);
+
+        const updated_filtered_apps = filtered_Applications.map((app) =>
+          app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
+        );
+        setfiltered_Applications(updated_filtered_apps);
         console.log("Application updated successfully:", response.data);
       })
 
       .catch((error) => {
-        console.error("Error updating application:", error);
+        console.error(error.response.data);
       });
   };
-
-  // card things
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [visibleCards] = useState<number>(calculateVisibleCards());
 
   function calculateVisibleCards(): number {
     const screenWidth = window.innerWidth;
@@ -181,12 +276,6 @@ function Applications() {
     setCurrentIndex(prevIndex);
   }
 
-  const isAtFirstCard = currentIndex === 0;
-  const isAtLastCard = currentIndex === filtered_Applications.length - 1;
-
-  // add application functionality
-
-  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -224,12 +313,26 @@ function Applications() {
         const addedApp = response.data;
         setApplications([...applications, addedApp]);
         setfiltered_Applications([...applications, addedApp]);
-        handleCloseAddDialog();
+        setAlertMessage("Data added successfully!");
+        setAlertType(ALERT_TYPES.SUCCESS);
+
+        // Close the modal after a brief delay (you can adjust the delay)
+        setTimeout(() => {
+          handleCloseAddDialog();
+        }, 1000);
       })
       .catch((error) => {
-        console.error("Error adding application:", error);
+        setAlertMessage(error.response.data);
+        setAlertType(ALERT_TYPES.ERROR);
       });
   };
+
+  useEffect(() => {
+    if (!isAddDialogOpen) {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
+  }, [isAddDialogOpen]);
 
   return (
     <>
@@ -238,10 +341,12 @@ function Applications() {
         onAddClick={handleAddClick}
         submitFunction={filterObjectsByName}
         totalCount={totalCount}
-        onIsActiveFilterClick={handleIsActiveFilterClick}
+        onActiveClick={handleActiveClick}
+        onSortByClick={handleSortByClick}
+        onSortOrderClick={handleSortOrderClick}
       />
       {loading ? (
-        <div>Loading...</div> // Show loading indicator while fetching data
+        <div>Loading...</div>
       ) : (
         <div className="container-fluid">
           <div className="row">
@@ -250,13 +355,12 @@ function Applications() {
                 onClick={handlePrevious}
                 disabled={isAtFirstCard}
                 className="TBS_arrow_button_left"
-                // style={{ width: "5px", height: "10px" }}
               />
 
               <div className="TBS_slider">
                 <div
                   className="TBS_card-wrapper"
-                  style={{ transform: `translateX(-${currentIndex * 260}px)` }} // Adjust card width
+                  style={{ transform: `translateX(-${currentIndex * 240}px)` }} // Adjust card width
                 >
                   {filtered_Applications.map((app, index) => (
                     <div
@@ -298,6 +402,8 @@ function Applications() {
         handleInputChange={handleInputChange}
         handleAdd={handleAddApplication}
         title="Add Application"
+        alertMessage={alertMessage} // Pass the alert message as a prop
+        alertType={alertType}
       />
 
       <Events
@@ -307,6 +413,6 @@ function Applications() {
       />
     </>
   );
-}
+};
 
 export default Applications;

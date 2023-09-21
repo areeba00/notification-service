@@ -43,7 +43,7 @@
   width: 100%;
   border: none;
   background-color: #f8f8f8;
-  padding: 8px;
+  /* padding: 8px; */
   border-radius: 5px;
   font-size: 16px;
   line-height: 1.5;
@@ -60,4 +60,9 @@
   font-size: 14px; /* Adjust the font size as needed */
   margin-top: 0px;
   margin-bottom: 14px;
+}
+.custom-mentions-input {
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 5px;
 }
