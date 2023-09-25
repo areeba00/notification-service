@@ -1,6 +1,7 @@
 import Applications from "./components/Applications/Application";
 import Navbar from "./common/Navbar/Navbar";
 import { useLocation } from "react-router-dom";
+import Footer from "./common/Footer/Footer";
 
 const App = () => {
   const { state } = useLocation();
@@ -9,7 +10,8 @@ const App = () => {
   return (
     <div>
       <Navbar />
-      <Applications locationState={state} />
+      <Applications />
+      <Footer />
     </div>
   );
 };

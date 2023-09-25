@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { ChangeEvent } from "react";
 import apiClient from "../../apiService/api-client";
 import { useEffect, useState } from "react";
 import "./Application.css";
 import Cards from "./Card/Card";
 import { BiSolidRightArrow, BiSolidLeftArrow } from "react-icons/bi";
+import Alert from "@mui/material/Alert";
+// import AlertTitle from "@mui/material/AlertTitle";
 import "./CardSlider/CardSlider.css";
 import Events from "../Events/Events";
 import TabBar from "../../common/TabBar/TabBar";
 import AddDialog from "../../common/AddDialog/AddDialog";
-import { Location } from "history";
 import { useBetween } from "use-between";
 import States from "../../States";
 
@@ -30,16 +32,8 @@ interface ApiResponse {
   TotalCount: string;
   applications: Applications[];
 }
-interface LocationState {
-  applicationId: number;
-  eventId: number;
-}
 
-interface ApplicationsProps {
-  locationState: LocationState;
-}
-const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
-  // const { applicationId, eventId } = locationState;
+const Applications = () => {
   const [applications, setApplications] = useState<Applications[]>([]);
   const [totalCount, setTotalCount] = useState<string>("");
 
@@ -55,15 +49,11 @@ const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
     setClickedCardID,
   } = useBetween(States);
 
-  // console.log("appsel", selectedApplicationId, "card", clikcedCardID);
-  // console.log("ev", selectedEventId);
-
   const [filtered_Applications, setfiltered_Applications] = useState<
     Applications[]
   >([]);
   const [loading, setLoading] = useState(true);
 
-  // Add a state to control the visibility of events
   const [showEvents, setShowEvents] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -75,36 +65,53 @@ const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [alertType, setAlertType] = useState<string | null>(null);
 
-  //   // Toggle the isActiveFilter state when the button is clicked
-  //   setIsActiveFilter(!isActiveFilter);
+  // const handleCardClick = (appId: number) => {
+  //   // Toggle the display of events
+  //   setClickedCardID(clikcedCardID ? 0 : appId);
+  //   setShowEvents(!showEvents);
 
-  //   // Construct the API URL based on the isActiveFilter value
-  //   const apiUrl = `/applications?isActive=${isActiveFilter}`;
-
-  //   // Send the API request using your API client
-  //   apiClient
-  //     .get(apiUrl)
-  //     .then((response) => {
-  //       // Handle the response and update your applications state accordingly
-  //       const activeapps = response.data.applications;
-  //       setApplications(activeapps);
-  //       setfiltered_Applications(activeapps);
-  //       setTotalCount(response.data.TotalCount);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching filtered applications:", error);
-  //     });
+  //   setSelectedApplicationId(showEvents ? null : appId);
+  // };
+  // const handleCardClick = (appId: number) => {
+  //   if (selectedApplicationId !== null) {
+  //     // Handle the case when state is coming from useBetween
+  //     if (appId !== selectedApplicationId) {
+  //       // Reset states for the new clicked card
+  //       setClickedCardID(appId);
+  //       setShowEvents(true);
+  //       setSelectedApplicationId(appId);
+  //     } else {
+  //       // Toggle the display of events if clicking the same card again
+  //       setShowEvents(!showEvents);
+  //     }
+  //   } else {
+  //     // Handle the case when there is no state from useBetween
+  //     setClickedCardID(appId);
+  //     setShowEvents(true);
+  //     setSelectedApplicationId(appId);
+  //   }
   // };
 
   const handleCardClick = (appId: number) => {
-    // Toggle the display of events
-    setClickedCardID(clikcedCardID ? 0 : appId);
-    setShowEvents(!showEvents);
-
-    // Set the selected application ID only if events are shown
-    setSelectedApplicationId(showEvents ? null : appId);
-
-    // setClickedCardID(clikcedCardID ? 0 : clikcedCardID);
+    if (selectedApplicationId !== null) {
+      // Handle the case when state is coming from useBetween
+      if (appId !== selectedApplicationId || !showEvents) {
+        // Reset states for the new clicked card
+        setClickedCardID(appId);
+        setShowEvents(true);
+        setSelectedApplicationId(appId);
+      } else {
+        // Deselect the application if clicking the same card again
+        setClickedCardID(0);
+        setShowEvents(false);
+        setSelectedApplicationId(null);
+      }
+    } else {
+      // Handle the case when there is no state from useBetween
+      setClickedCardID(appId);
+      setShowEvents(true);
+      setSelectedApplicationId(appId);
+    }
   };
 
   const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
@@ -183,36 +190,6 @@ const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
     return filtered_Applications;
   }
 
-  // const sortApps = (sortCriteria: "created_at" | "updated_at" | null) => {
-  //   // Create a copy of the applications array
-  //   const filteredApplicationsCopy = [...applications];
-
-  //   // Toggle the sorting order if the same sorting criteria is clicked again
-  //   if (sortCriteria === sortingCriteria) {
-  //     filteredApplicationsCopy.reverse(); // Reverse the order
-  //     setSortingCriteria(null); // Reset sorting criteria
-  //   } else {
-  //     // Sort applications based on sortCriteria
-  //     if (sortCriteria) {
-  //       filteredApplicationsCopy.sort((a, b) => {
-  //         if (sortCriteria === "created_at") {
-  //           return a.created_at.localeCompare(b.created_at);
-  //         } else if (sortCriteria === "updated_at") {
-  //           return a.updated_at.localeCompare(b.updated_at);
-  //         }
-  //         return 0;
-  //       });
-  //       // Update the sorting criteria state
-  //       setSortingCriteria(sortCriteria);
-  //     }
-  //   }
-
-  //   // Update the state with the sorted applications
-  //   setfiltered_Applications(filteredApplicationsCopy);
-
-  //   return filteredApplicationsCopy;
-  // };
-
   const deleteApplication = (application: Applications) => {
     // Create a new array that filters out the application to be deleted
     const updatedApplications = applications.filter(
@@ -232,30 +209,33 @@ const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
       .catch((err) => console.log(err.message));
   };
 
-  const editApplication = (updatedApplication: Applications) => {
-    // Remove the "id" field from the payload
+  const editApplication = async (updatedApplication: Applications) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, created_at, updated_at, ...dataWithoutId } = updatedApplication;
 
-    console.log("hdahdkljkd", updatedApplication.id);
-    apiClient
-      .put("/applications/" + updatedApplication.id, dataWithoutId)
-      .then((response) => {
-        const updatedApps = applications.map((app) =>
-          app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
-        );
-        setApplications(updatedApps);
+    try {
+      const response = await apiClient.put(
+        "/applications/" + updatedApplication.id,
+        dataWithoutId
+      );
+      console.log(response);
 
-        const updated_filtered_apps = filtered_Applications.map((app) =>
-          app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
-        );
-        setfiltered_Applications(updated_filtered_apps);
-        console.log("Application updated successfully:", response.data);
-      })
+      const updatedApps = applications.map((app) =>
+        app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
+      );
+      setApplications(updatedApps);
 
-      .catch((error) => {
-        console.error(error.response.data);
-      });
+      const updated_filtered_apps = filtered_Applications.map((app) =>
+        app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
+      );
+      setfiltered_Applications(updated_filtered_apps);
+
+      return "Data updated successfully!";
+    } catch (error) {
+      throw (
+        error.response?.data || "Error updating application. Please try again."
+      );
+    }
   };
 
   function calculateVisibleCards(): number {
@@ -282,10 +262,22 @@ const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
   });
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
+
+    // Remove leading spaces for "name" and "description" fields
+    let trimmedValue = value;
+    if (name === "name" || name === "description") {
+      trimmedValue = value.replace(/^\s+/, "");
+    }
+
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: trimmedValue,
     });
+    // Clear the alert message when the user starts typing
+    if (name === "name" || name === "description") {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
   };
 
   const handleAddClick = () => {
@@ -305,9 +297,17 @@ const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
     name: string;
     description: string;
   }) => {
+    const trimmedName = newApplication.name.trim();
+    const trimmedDescription = newApplication.description.trim();
+    const newApplication2 = {
+      name: trimmedName,
+      description: trimmedDescription,
+    };
+
     // Make a POST request to add the new application
+
     apiClient
-      .post("/applications", newApplication)
+      .post("/applications", newApplication2)
       .then((response) => {
         // Assuming the server returns the added application data
         const addedApp = response.data;
@@ -346,53 +346,75 @@ const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
         onSortOrderClick={handleSortOrderClick}
       />
       {loading ? (
-        <div>Loading...</div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            color: "blue",
+            marginTop: "20px",
+            marginBottom: "20px",
+          }}
+        >
+          Loading...
+        </div>
       ) : (
         <div className="container-fluid">
-          <div className="row">
-            <div className="TBS_slider-container">
-              <BiSolidLeftArrow
-                onClick={handlePrevious}
-                disabled={isAtFirstCard}
-                className="TBS_arrow_button_left"
-              />
+          {filtered_Applications.length === 0 ? (
+            <Alert severity="warning" className="my-Alerts">
+              No Applications Found —{" "}
+              <strong>There are currently no Applications!</strong>
+            </Alert>
+          ) : (
+            <div className="row">
+              <div className="TBS_slider-container">
+                <BiSolidLeftArrow
+                  onClick={handlePrevious}
+                  disabled={isAtFirstCard}
+                  className="TBS_arrow_button_left"
+                />
 
-              <div className="TBS_slider">
-                <div
-                  className="TBS_card-wrapper"
-                  style={{ transform: `translateX(-${currentIndex * 240}px)` }} // Adjust card width
-                >
-                  {filtered_Applications.map((app, index) => (
-                    <div
-                      key={index}
-                      className={`TBS_slider-card ${
-                        index >= currentIndex &&
-                        index < currentIndex + visibleCards
-                          ? "visible"
-                          : ""
-                      }`}
-                    >
-                      <Cards
-                        clicked_id={clikcedCardID}
-                        card_id={app.id}
-                        applications={app}
-                        deleteHandler={deleteApplication}
-                        editHandler={editApplication}
-                        onClick={() => handleCardClick(app.id)}
-                      />
-                    </div>
-                  ))}
+                <div className="TBS_slider">
+                  <div
+                    className="TBS_card-wrapper"
+                    style={{
+                      transform: `translateX(-${currentIndex * 260}px)`,
+                    }} // Adjust card width
+                  >
+                    {filtered_Applications.map((app, index) => (
+                      <div
+                        key={index}
+                        className={`TBS_slider-card ${
+                          index >= currentIndex &&
+                          index < currentIndex + visibleCards
+                            ? "visible"
+                            : ""
+                        }`}
+                      >
+                        <Cards
+                          clicked_id={clikcedCardID}
+                          card_id={app.id}
+                          applications={app}
+                          deleteHandler={deleteApplication}
+                          editHandler={editApplication}
+                          onClick={() => handleCardClick(app.id)}
+                          AlertMessage={alertMessage} // Pass the alert message as a prop
+                          AlertType={alertType}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <BiSolidRightArrow
-                onClick={handleNext}
-                disabled={isAtLastCard}
-                className="TBS_arrow_button_right"
-                // style={{ width: "5px", height: "10px" }}
-              />
+                <BiSolidRightArrow
+                  onClick={handleNext}
+                  disabled={isAtLastCard}
+                  className="TBS_arrow_button_right"
+                  // style={{ width: "5px", height: "10px" }}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
       <AddDialog
@@ -406,11 +428,13 @@ const Applications: React.FC<ApplicationsProps> = ({ locationState }) => {
         alertType={alertType}
       />
 
-      <Events
-        applicationId={
-          selectedApplicationId === clikcedCardID ? clikcedCardID : null
-        }
-      />
+      {filtered_Applications.length !== 0 && (
+        <Events
+          applicationId={
+            selectedApplicationId === clikcedCardID ? clikcedCardID : null
+          }
+        />
+      )}
     </>
   );
 };

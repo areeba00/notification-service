@@ -32,6 +32,12 @@ interface NotificationProps {
 const Notifications = ({ eventId, applicationId }: NotificationProps) => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<Notifications[]>([]);
+
+  useEffect(() => {
+    console.log("in notif, ch event id", eventId);
+    setNotifications([]);
+  }, [eventId]);
+
   const [originalNotifications, setOriginalNotifications] = useState<
     Notifications[]
   >([]);
@@ -97,9 +103,11 @@ const Notifications = ({ eventId, applicationId }: NotificationProps) => {
         .catch((error) => {
           console.error("Error fetching notifications:", error);
         });
-    } else {
-      setNotifications([]);
     }
+    // else {
+    //   console.log("No notifs found");
+    //   setNotifications([]);
+    // }
     setTotalCount("");
   }, [eventId, page, rowsPerPage, isActiveFilter, sortBy, sortOrder]);
 
@@ -116,24 +124,32 @@ const Notifications = ({ eventId, applicationId }: NotificationProps) => {
   };
 
   const deleteNotification = (notification: Notifications) => {
-    // Create a new array that filters out the event to be deleted
-    const updatedEvents = notifications.filter(
-      (notification) => notification.id !== notification.id
+    // Create a new array that filters out the notifications to be deleted
+    const updatedNotifications = notifications.filter(
+      (notificationn) => notificationn.id !== notification.id
     );
 
     // Update the state with the new array
-    setNotifications(updatedEvents);
+    setNotifications(updatedNotifications);
+
 
     apiClient
       .delete("/notifications/" + notification.id)
+      .then(() => {
+        // Check if there are no events on the current page and reset the page to 0
+        if (updatedNotifications.length === 0 && page > 0) {
+          setPage(0);
+        }
+      })
       .catch((err) => console.log(err.message));
   };
 
+
   const editNotification = (updatedNotification: Notifications) => {
-    console.log("here3");
+    // console.log("here3");
     // Create an object with the updated event data
     const updatedNotificationData = {
-      name: updatedNotification.name,
+      name: updatedNotification.name.replace(/\s+/g, ' '),
       description: updatedNotification.description,
       template_subject: updatedNotification.template_subject,
       template_body: updatedNotification.template_body,
@@ -210,7 +226,8 @@ const Notifications = ({ eventId, applicationId }: NotificationProps) => {
           </Alert>
         </>
       ) : (
-        eventId !== null && (
+        eventId !== null &&
+        notifications.length !== 0 && (
           <>
             <TabBar
               title={"NOTIFICATIONS"}

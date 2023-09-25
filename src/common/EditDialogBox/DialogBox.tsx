@@ -5,8 +5,12 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { Alert } from "@mui/material";
-
+import { Alert, AlertColor } from "@mui/material";
+const alertTypeMap: { [key: string]: AlertColor } = {
+  success: "success",
+  error: "error",
+  // Add more mappings as needed
+};
 interface EditDialogProps {
   open: boolean;
   onClose: () => void;
@@ -18,6 +22,7 @@ interface EditDialogProps {
   handleSave: () => void;
   alertMessage: string | null;
   alertType: string | null;
+  title: string | null;
 }
 
 const DialogBox: React.FC<EditDialogProps> = ({
@@ -28,6 +33,7 @@ const DialogBox: React.FC<EditDialogProps> = ({
   handleSave,
   alertMessage, // Access alertMessage from props
   alertType,
+  title,
 }) => {
   const [nameError, setNameError] = useState<string>("");
   const [descriptionError, setDescriptionError] = useState<string>("");
@@ -37,17 +43,24 @@ const DialogBox: React.FC<EditDialogProps> = ({
     // Check the length of name and description when the "Save" button is clicked
     const isNameValid = formData.name.length >= 3;
     const isDescriptionValid = formData.description.length >= 5;
+    const isDescriptionWithinLimit = formData.description.length <= 200;
 
     setIsSaveDisabled(!(isNameValid && isDescriptionValid));
 
-    if (!isNameValid) {
+    if (formData.name.trim().length === 0) {
+      setNameError("Name is required");
+    } else if (!isNameValid) {
       setNameError("Name must be at least 3 characters");
     } else {
       setNameError("");
     }
 
-    if (!isDescriptionValid) {
+    if (formData.description.trim().length === 0) {
+      setDescriptionError("Description is required");
+    } else if (!isDescriptionValid) {
       setDescriptionError("Description must be at least 5 characters");
+    } else if (!isDescriptionWithinLimit) {
+      setDescriptionError("Description must not exceed 200 characters");
     } else {
       setDescriptionError("");
     }
@@ -68,15 +81,16 @@ const DialogBox: React.FC<EditDialogProps> = ({
       }}
     >
       <DialogTitle style={{ textAlign: "center", marginTop: "20px" }}>
-        Edit Application
+        Edit {title}
       </DialogTitle>
       <DialogContent style={{ padding: "26px" }}>
         {alertMessage && alertType && (
-          <Alert severity={alertType}>{alertMessage}</Alert>
+          <Alert severity={alertTypeMap[alertType]}>{alertMessage}</Alert>
         )}
         <TextField
           label="Name"
           name="name"
+          required
           fullWidth
           margin="dense"
           variant="outlined"
@@ -89,6 +103,7 @@ const DialogBox: React.FC<EditDialogProps> = ({
         <TextField
           label="Description"
           name="description"
+          required
           multiline
           rows={5}
           fullWidth

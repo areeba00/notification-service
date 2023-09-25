@@ -94,9 +94,14 @@ const CommonGrid = <T extends CommonItem>({
       ...formData,
       [name]: value,
     });
+    // Clear the alert message when the user starts typing
+    if (name === "name" || name === "description") {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log("here save");
 
     if (selectedItem) {
@@ -112,10 +117,14 @@ const CommonGrid = <T extends CommonItem>({
       // editHandler(updatedItem);
       // closeModal();
       try {
-        editHandler(updatedItem);
+        console.log("here1");
+        const message = await editHandler(updatedItem);
+
+        console.log("message a arhaa hai", message);
 
         // On success, set the success alert
-        setAlertMessage("Application updated successfully!");
+        setAlertMessage(message);
+        console.log("alert message check", alertMessage);
         setAlertType(ALERT_TYPES.SUCCESS);
 
         // Close the modal after a brief delay (you can adjust the delay)
@@ -124,7 +133,8 @@ const CommonGrid = <T extends CommonItem>({
         }, 1000);
       } catch (error) {
         // On error, set the error alert
-        setAlertMessage("Error updating application. Please try again.");
+        setAlertMessage(error);
+        console.log("alert message check", alertMessage);
         setAlertType(ALERT_TYPES.ERROR);
       }
     }
@@ -175,7 +185,7 @@ const CommonGrid = <T extends CommonItem>({
     navigate(editNotificationUrl);
   };
 
-  const switchActive_fun = (item: T, active: boolean) => {
+  const switchActive_fun = async (item: T, active: boolean) => {
     const editedItem: T = {
       ...item,
       isActive: !active,
@@ -183,16 +193,16 @@ const CommonGrid = <T extends CommonItem>({
 
     console.log("COMMON GRID:", editedItem, editedItem.isActive);
     console.log("cg_check:", active);
-    // Call the editHandler to update the application
 
     try {
       console.log("here1");
-      editHandler(editedItem);
+      const message = await editHandler(editedItem);
 
-      console.log("here2");
+      console.log("message a arhaa hai", message);
 
       // On success, set the success alert
-      setAlertMessage("Application updated successfully!");
+      setAlertMessage(message);
+      console.log("alert message check", alertMessage);
       setAlertType(ALERT_TYPES.SUCCESS);
 
       // Close the modal after a brief delay (you can adjust the delay)
@@ -201,7 +211,8 @@ const CommonGrid = <T extends CommonItem>({
       }, 1000);
     } catch (error) {
       // On error, set the error alert
-      setAlertMessage("Error updating application. Please try again.");
+      setAlertMessage(error);
+      console.log("alert message check", alertMessage);
       setAlertType(ALERT_TYPES.ERROR);
     }
   };
@@ -217,10 +228,19 @@ const CommonGrid = <T extends CommonItem>({
                 <TableRow>
                   {itemType === "event" && <TableCell></TableCell>}
                   <TableCell>
-                    {itemType === "event" ? "Event Name" : "Notification Name"}
+                    <strong>
+                      {itemType === "event"
+                        ? "Event Name"
+                        : "Notification Name"}
+                    </strong>
                   </TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell className="actions-column">Actions</TableCell>
+                  <TableCell>
+                    {" "}
+                    <strong>Description</strong>
+                  </TableCell>
+                  <TableCell className="actions-column">
+                    <strong>Actions</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -276,8 +296,9 @@ const CommonGrid = <T extends CommonItem>({
             formData={formData}
             handleInputChange={handleInputChange}
             handleSave={handleSave}
-            alertMessage={alertMessage} // Pass the alert message as a prop
+            alertMessage={alertMessage}
             alertType={alertType}
+            title={"Event"}
           />
         ) : (
           <NotificationDialog

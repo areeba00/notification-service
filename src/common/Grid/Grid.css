@@ -1,8 +1,8 @@
 .table-container {
   align-items: center;
   /* margin-top: 200px; */
-  margin-left: 100px;
-  margin-right: 100px;
+  margin-left: 5%;
+  margin-right: 5%;
   margin-bottom: 30px;
   width: auto;
   padding-left: 0px;
@@ -16,7 +16,8 @@
 }
 .paper {
   padding: 10px;
-  padding-left: 70px;
+  padding-left: 2%;
+  padding-right: 2%;
 }
 
 .center-text {
@@ -33,9 +34,23 @@
 
 .actions-column {
   width: 200px;
+  padding-left: 70px !important;
 }
 
 .table-container .MuiTableCell-head {
   border-bottom: 2px solid black;
-  padding-left: 1px;
+  /* padding-left: 1px; */
+  text-align: left;
 }
+
+/* Add media query for smaller screens */
+@media (max-width: 768px) {
+  .table-container .center-text {
+    text-align: left; /* Left-align text for headings */
+  }
+
+  .table-container .center-text:first-child {
+    text-align: center; /* Center-align text for first column */
+  }
+}
+

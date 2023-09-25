@@ -210,13 +210,12 @@ const EditNotificationPage = () => {
   // navigation back
   const handleCancelButtonClick = () => {
     // Navigate back to the desired URL when the cancel button is clicked
-    navigate("/Dashboard", {
-      // state: { eventId: eventId, applicationId: applicationId },
-    });
+    navigate("/Dashboard");
   };
 
   const handleDialogClose = () => {
     setIsDialogOpen(false);
+    navigate("/Dashboard");
   };
 
   // Update the preview whenever subject or body changes
@@ -225,7 +224,7 @@ const EditNotificationPage = () => {
   }, [subject, body]);
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value);
+    setName(e.target.value.replace(/\s+/g, ' '));
     setNameError(null);
   };
 

@@ -8,8 +8,12 @@ import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import "./AddDialog.css";
-import { Alert } from "@mui/material";
-
+import { Alert, AlertColor } from "@mui/material";
+const alertTypeMap: { [key: string]: AlertColor } = {
+  success: "success",
+  error: "error",
+  // Add more mappings as needed
+};
 interface AddDialogProps<T> {
   open: boolean;
   onClose: () => void;
@@ -43,22 +47,35 @@ const AddDialog = <T extends object>({
     // Clear the corresponding error when the user starts typing
     if (name === "name") {
       setNameError(null);
+      if (value.trim().length === 0) {
+        alertMessage(null); // Clear the alert message when name is empty
+      }
     } else if (name === "description") {
       setDescriptionError(null);
     }
   };
+
   const validateForm = () => {
     let valid = true;
 
-    if ((formData as any).name.trim().length < 3) {
+    if ((formData as any).name.trim().length === 0) {
+      setNameError("Name is required");
+      valid = false;
+    } else if ((formData as any).name.trim().length < 3) {
       setNameError("Name must be at least 3 characters");
       valid = false;
     } else {
       setNameError(null);
     }
 
-    if ((formData as any).description.trim().length < 5) {
+    if ((formData as any).description.trim().length === 0) {
+      setDescriptionError("Description is required");
+      valid = false;
+    } else if ((formData as any).description.trim().length < 5) {
       setDescriptionError("Description must be at least 5 characters");
+      valid = false;
+    } else if ((formData as any).description.trim().length > 200) {
+      setDescriptionError("Description must not exceed 200 characters");
       valid = false;
     } else {
       setDescriptionError(null);

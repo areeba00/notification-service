@@ -31,7 +31,6 @@ article.card {
   /* transition: 2.4s 0.15s cubic-bezier(0.17, 0.67, 0.5, 1.03); */
 }
 
-
 .card::before {
   content: "";
   position: absolute;
@@ -73,14 +72,12 @@ article.card .C-infos {
   transition: 0.4s 0.15s cubic-bezier(0.17, 0.67, 0.5, 1.03);
 }
 
-article.card:hover .C-infos{
+article.card:hover .C-infos {
   border: 3px solid rgba(228, 96, 96, 0.614);
 }
-article.card.card.clicked:hover .C-infos{
+article.card.card.clicked:hover .C-infos {
   border: 3px solid rgba(173, 172, 172, 0.614);
 }
-
-
 
 article.card .C-infos .C-title {
   position: relative;
@@ -89,7 +86,7 @@ article.card .C-infos .C-title {
   color: #152536;
   font-family: "Grotesque Black", sans-serif;
   font-size: 1.7rem;
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
   text-shadow: 0 0 0px #32577f;
 }
 
@@ -126,6 +123,13 @@ article.card:hover .C-infos .C-txt,
 article.card:hover .C-infos .edit_options {
   opacity: 1;
 } */
+
+.C-txt {
+  max-height: 80px;
+  overflow-y: auto; /* Use "auto" instead of "scroll" to show the scroll bar only when needed */
+  overflow-x: hidden; /* Hide the horizontal scroll bar */
+  min-width: 100%;
+}
 
 .TB-radio-button {
   width: 35px;

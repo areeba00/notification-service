@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useState, useEffect } from "react";
 import IconButton from "@mui/material/IconButton";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import Tooltip from '@mui/material/Tooltip';
+import Tooltip from "@mui/material/Tooltip";
 import { IoSearchCircleSharp } from "react-icons/io5";
 import "./TabBar.css";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -9,6 +9,14 @@ import SortByAlphaIcon from "@mui/icons-material/SortByAlpha";
 import SortIcon from "@mui/icons-material/Sort";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+
+
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Radio from '@mui/material/Radio';
+import Divider from '@mui/material/Divider';
 
 interface Applications {
   id: number;
@@ -31,24 +39,31 @@ interface Props {
   onSortOrderClick: (sortOrderValue: "asc" | "desc" | undefined) => void;
 }
 
+let selectedFilter = 'all';
+
 const TabBar = (props: Props) => {
   const handleActiveClick = () => {
+    selectedFilter = 'active';
     props.onActiveClick(true);
   };
 
   const handleInactiveClick = () => {
+    selectedFilter = 'inactive';
     props.onActiveClick(false);
   };
 
   const handleAllClick = () => {
+    selectedFilter = 'all';
     props.onActiveClick(undefined);
   };
 
   const handleSortByNameClick = () => {
+    console.log('sorting by name');
     props.onSortByClick("name");
   };
 
   const handleSortByCreatedAtClick = () => {
+    console.log('sorting by created at');
     props.onSortByClick("created_at");
   };
 
@@ -140,6 +155,20 @@ const TabBar = (props: Props) => {
     setSortOrderMenuAnchor(null);
   };
 
+
+  const [currentSort, setCurrentSort] = useState('name');
+  const [currentSortOrder, setCurrentSortOrder] = useState('asc');
+
+  // Define event handlers to update the states
+  const handleSortChange = (newValue) => {
+    setCurrentSort(newValue); 
+  };
+
+  const handleSortOrderChange = (newValue) => {
+    setCurrentSortOrder(newValue);
+  };
+
+
   return (
     <nav
       className={`navbar tabbar-custom ${
@@ -147,19 +176,69 @@ const TabBar = (props: Props) => {
       }`}
     >
       <div className="container-fluid">
-        <a
-          className="navbar-brand"
-          style={{ fontSize: "21px", color: "white" }}
-        >
-          {props.title}
-          {props.totalCount && (
-            <span style={{ marginLeft: "10px", fontSize: "14px" }}>
-              (Total count: {props.totalCount})
-            </span>
-          )}
-        </a>
+        <div className="navbar-brand">
+          <a
+            style={{ color: "white" }}
+            >
+            {props.title}
+          </a>
+          <a
+            style={{ color: "white" }}
+          >
+            {props.totalCount && (
+              <span style={{ marginLeft: "10px", fontSize: "14px" }}>
+                (Total count: {props.totalCount})
+              </span>
+            )}
+          </a>
+        </div>
 
-        <div style={{ display: "flex" }}>
+
+        <div className="grid-all-things">
+
+          
+          <div className="grid-all-icons">
+            <div className="icon-box">
+              <Tooltip title="Add">
+                <IconButton onClick={props.onAddClick} style={{ color: "white" }}>
+                  <AddCircleOutlineIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
+            <div className="icon-box">
+              <Tooltip title="Filter By">
+                <IconButton
+                  onClick={handleFilterMenuOpen}
+                  style={{ color: "white" }}
+                >
+                  <FilterAltIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
+            {/* <div className="icon-box">
+              <Tooltip title="Sort On">
+                <IconButton
+                  onClick={handleSortMenuOpen}
+                  style={{ color: "white" }}
+                >
+                  <SortByAlphaIcon />
+                </IconButton>
+              </Tooltip>
+            </div> */}
+            <div className="icon-box">
+              <Tooltip title="Sort">
+                <IconButton
+                  onClick={handleSortOrderMenuOpen}
+                  style={{ color: "white" }}
+                >
+                  <SortIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
+          </div>
+
+
+          
           <form className="d-flex search" onSubmit={handleSubmit}>
             <input
               className="form-control"
@@ -179,41 +258,6 @@ const TabBar = (props: Props) => {
               />
             </button>
           </form>
-          <div className="icon-box">
-            <Tooltip title="Add">
-              <IconButton onClick={props.onAddClick} style={{ color: "white" }}>
-                <AddCircleOutlineIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
-          <div className="icon-box">
-            <Tooltip title="Filter By">
-              <IconButton
-                onClick={handleFilterMenuOpen}
-                style={{ color: "white" }}
-              >
-              <FilterAltIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
-          <div className="icon-box">
-            <Tooltip title="Sort On">
-              <IconButton onClick={handleSortMenuOpen} style={{ color: "white" }}>
-                <SortByAlphaIcon />
-              </IconButton>
-            </Tooltip>
-            
-          </div>
-          <div className="icon-box">
-            <Tooltip title="Sort By">
-              <IconButton
-                onClick={handleSortOrderMenuOpen}
-                style={{ color: "white" }}
-              >
-                <SortIcon />
-              </IconButton>
-            </Tooltip>
-          </div>
         </div>
 
         <Menu
@@ -221,27 +265,80 @@ const TabBar = (props: Props) => {
           open={Boolean(filterMenuAnchor)}
           onClose={handleFilterMenuClose}
         >
-          <MenuItem onClick={handleActiveClick}>Active</MenuItem>
-          <MenuItem onClick={handleInactiveClick}>Inactive</MenuItem>
-          <MenuItem onClick={handleAllClick}>All</MenuItem>
+          <MenuItem onClick={handleActiveClick}
+          style={{ backgroundColor: selectedFilter === 'active' ? 'lightblue' : 'inherit' }}
+          >Active</MenuItem>
+          <MenuItem onClick={handleInactiveClick}
+          style={{ backgroundColor: selectedFilter === 'inactive' ? 'lightblue' : 'inherit' }}
+          >Inactive</MenuItem>
+          <MenuItem onClick={handleAllClick}
+          style={{ backgroundColor: selectedFilter === 'all' ? 'lightblue' : 'inherit' }}
+          >All</MenuItem>
         </Menu>
-        <Menu
-          anchorEl={sortMenuAnchor}
-          open={Boolean(sortMenuAnchor)}
-          onClose={handleSortMenuClose}
-        >
-          <MenuItem onClick={handleSortByNameClick}>name</MenuItem>
-          <MenuItem onClick={handleSortByCreatedAtClick}>created_at</MenuItem>
-          <MenuItem onClick={handleSortByUpdatedAtClick}>updated_at</MenuItem>
-        </Menu>
+
+
+
+
         <Menu
           anchorEl={sortOrderMenuAnchor}
           open={Boolean(sortOrderMenuAnchor)}
           onClose={handleSortOrderMenuClose}
         >
-          <MenuItem onClick={handleSortOrderAscClick}>ASC</MenuItem>
-          <MenuItem onClick={handleSortOrderDescClick}>DESC</MenuItem>
+          <MenuItem>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Sort By</FormLabel>
+              <RadioGroup
+                value={currentSort}
+                onClick={(e) => handleSortChange(e.target.value)}
+              >
+                <FormControlLabel
+                  value="name"
+                  control={<Radio />}
+                  label="Name"
+                  onClick={handleSortByNameClick}
+                />
+                <FormControlLabel
+                  value="created_at"
+                  control={<Radio />}
+                  label="Created_at"
+                  onClick={handleSortByCreatedAtClick}
+                />
+                <FormControlLabel
+                  value="updated_at"
+                  control={<Radio />}
+                  label="Updated_at"
+                  onClick={handleSortByUpdatedAtClick}
+                />
+              </RadioGroup>
+            </FormControl>
+          </MenuItem>
+          <Divider />
+          <MenuItem>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">Sort Order</FormLabel>
+              <RadioGroup
+                value={currentSortOrder}
+                onChange={(e) => handleSortOrderChange(e.target.value)}
+              >
+                <FormControlLabel
+                  value="asc"
+                  control={<Radio />}
+                  label="Ascending"
+                  onClick={handleSortOrderAscClick}
+                />
+                <FormControlLabel
+                  value="desc"
+                  control={<Radio />}
+                  label="Descending"
+                  onClick={handleSortOrderDescClick}
+                />
+              </RadioGroup>
+            </FormControl>
+          </MenuItem>
         </Menu>
+
+
+        
       </div>
     </nav>
   );

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, ChangeEvent, useEffect } from "react";
 
 import "./Card.css";
@@ -26,7 +27,8 @@ interface Props {
   deleteHandler: (application: Applications) => void;
   editHandler: (editedApplication: Applications) => void;
   onClick: () => void;
-  // gridComponent: React.ComponentType<{ events: Events[] }>;
+  AlertMessage: string | null;
+  AlertType: string | null;
 }
 
 const Cards = ({
@@ -36,6 +38,8 @@ const Cards = ({
   deleteHandler,
   editHandler,
   onClick,
+  AlertMessage, // Access alertMessage from props
+  AlertType,
 }: // gridComponent: Grid,
 Props) => {
   //delete things
@@ -100,21 +104,26 @@ Props) => {
       ...formData,
       [name]: value,
     });
+
+    // Clear the alert message when the user starts typing
+    if (name === "name" || name === "description") {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const editedApplication: Applications = {
       ...applications,
       name: formData.name,
       description: formData.description,
     };
 
-    // Call the editHandler to update the application
     try {
-      editHandler(editedApplication);
+      const message = await editHandler(editedApplication);
 
       // On success, set the success alert
-      setAlertMessage("Application updated successfully!");
+      setAlertMessage(message);
       setAlertType(ALERT_TYPES.SUCCESS);
 
       // Close the modal after a brief delay (you can adjust the delay)
@@ -122,25 +131,23 @@ Props) => {
         closeModal();
       }, 1000);
     } catch (error) {
-      // On error, set the error alert
-      setAlertMessage("Error updating application. Please try again.");
+      setAlertMessage(error);
       setAlertType(ALERT_TYPES.ERROR);
     }
   };
 
   // FUNCTION TO SWITCH THE ACTIVE STATE
-  const switchActive_fun = (active: boolean) => {
+  const switchActive_fun = async (active: boolean) => {
     const editedApplication: Applications = {
       ...applications,
       isActive: !active,
     };
 
-    // Call the editHandler to update the application
     try {
-      editHandler(editedApplication);
+      const message = await editHandler(editedApplication);
 
       // On success, set the success alert
-      setAlertMessage("Application updated successfully!");
+      setAlertMessage(message);
       setAlertType(ALERT_TYPES.SUCCESS);
 
       // Close the modal after a brief delay (you can adjust the delay)
@@ -149,7 +156,7 @@ Props) => {
       }, 1000);
     } catch (error) {
       // On error, set the error alert
-      setAlertMessage("Error updating application. Please try again.");
+      setAlertMessage(error);
       setAlertType(ALERT_TYPES.ERROR);
     }
   };
@@ -216,6 +223,7 @@ Props) => {
           handleSave={handleSave}
           alertMessage={alertMessage} // Pass the alert message as a prop
           alertType={alertType}
+          title={"Application"}
         />
       </div>
       <div>
@@ -223,7 +231,7 @@ Props) => {
           open={isDeleteConfirmationOpen}
           onClose={closeDeleteConfirmation}
           onConfirm={confirmDelete}
-          title={"application"}
+          title={"Application"}
         />
       </div>
     </>

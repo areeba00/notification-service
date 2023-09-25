@@ -142,9 +142,16 @@ const Events = ({ applicationId }: EventsProps) => {
 
     apiClient
       .delete("/events/" + event.id)
+      .then(() => {
+        // Check if there are no events on the current page and reset the page to 0
+        if (updatedEvents.length === 0 && page > 0) {
+          setPage(0);
+        }
+      })
       .catch((err) => console.log(err.message));
   };
-  const editEvent = (updatedEvent: Events) => {
+
+  const editEvent = async (updatedEvent: Events) => {
     // Create an object with the updated event data
     const updatedEventData = {
       name: updatedEvent.name,
@@ -156,18 +163,32 @@ const Events = ({ applicationId }: EventsProps) => {
     console.log("In EVENT: ", updatedEvent);
 
     // Send a PUT request to update the event on the server
-    apiClient
-      .patch(`/events/${updatedEvent.id}`, updatedEventData)
-      .then((response) => {
-        // Assuming the server returns the updated event data
-        const updatedEvents = events.map((event) =>
-          event.id === updatedEvent.id ? response.data : event
-        );
-        setEvents(updatedEvents);
-      })
-      .catch((error) => {
-        console.error("Error updating event:", error);
-      });
+    // apiClient
+    //   .put(`/events/${updatedEvent.id}`, updatedEventData)
+    //   .then((response) => {
+    //     // Assuming the server returns the updated event data
+    // const updatedEvents = events.map((event) =>
+    //   event.id === updatedEvent.id ? response.data : event
+    // );
+    // setEvents(updatedEvents);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error updating event:", error);
+    //   });
+
+    try {
+      const response = await apiClient.put(
+        `/events/${updatedEvent.id}`,
+        updatedEventData
+      );
+      const updatedEvents = events.map((event) =>
+        event.id === updatedEvent.id ? response.data : event
+      );
+      setEvents(updatedEvents);
+      return "Data updated successfully!";
+    } catch (error) {
+      throw error.response?.data || "Error updating event. Please try again.";
+    }
   };
 
   const [formData, setFormData] = useState({
@@ -178,8 +199,13 @@ const Events = ({ applicationId }: EventsProps) => {
     const { name, value } = event.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value.replace(/\s+/g, " "),
     });
+    // Clear the alert message when the user starts typing
+    if (name === "name" || name === "description") {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
   };
 
   const handleAddClick = () => {
@@ -200,16 +226,32 @@ const Events = ({ applicationId }: EventsProps) => {
       ...newEvent,
       application_id: applicationId,
     };
+
+    const trimmedName = eventDataWithAppId.name.trim();
+    const trimmedDescription = eventDataWithAppId.description.trim();
+    const newEvent2 = {
+      name: trimmedName,
+      description: trimmedDescription,
+      application_id: applicationId,
+    };
+
     // Make a POST request to add the new application
     apiClient
-      .post("/events", eventDataWithAppId)
+      .post("/events", newEvent2)
       .then((response) => {
         // Assuming the server returns the added application data
         const addedEvent = response.data;
-        setEvents([...events, addedEvent]);
+        const updatedEvents = [...events, addedEvent];
+        setEvents(updatedEvents);
         setAlertMessage("Data added successfully!");
         setAlertType(ALERT_TYPES.SUCCESS);
         handleCloseAddDialog();
+        // Check if the new event exceeds the current page's capacity
+        if (updatedEvents.length > rowsPerPage) {
+          // Calculate the new page number
+          const newPage = Math.floor(updatedEvents.length / rowsPerPage);
+          setPage(newPage);
+        }
       })
       .catch((error) => {
         console.error("Error adding event:", error);
@@ -225,8 +267,24 @@ const Events = ({ applicationId }: EventsProps) => {
     }
   }, [isAddDialogOpen]);
 
+  // const handleCheckboxClick = (eventId: number) => {
+  //   setSelectedEventId(eventId); // Update the selected event ID state
+  // };
+
   const handleCheckboxClick = (eventId: number) => {
-    setSelectedEventId(eventId); // Update the selected event ID state
+    if (selectedEventId !== null) {
+      // Handle the case when state is coming from useBetween
+      if (eventId !== selectedEventId) {
+        // Update the selected event ID state for a different event
+        setSelectedEventId(eventId);
+      } else {
+        // Deselect the event if clicking the same event again
+        setSelectedEventId(null);
+      }
+    } else {
+      // Handle the case when there is no state from useBetween
+      setSelectedEventId(eventId);
+    }
   };
 
   function filterEventsByName(searchString: string): Events[] {
@@ -245,9 +303,7 @@ const Events = ({ applicationId }: EventsProps) => {
 
   return (
     <>
-      {isLoading && (
-        <CircularProgress /> // Show loading indicator while fetching data
-      )}
+      {isLoading && <CircularProgress />}
       {applicationId === null && (
         <Alert severity="info" className="my-Alerts">
           <AlertTitle>Info</AlertTitle>
@@ -294,6 +350,16 @@ const Events = ({ applicationId }: EventsProps) => {
               onSortByClick={handleSortByClick}
               onSortOrderClick={handleSortOrderClick}
             />
+            <AddDialog
+              open={isAddDialogOpen}
+              onClose={handleCloseAddDialog}
+              formData={formData}
+              handleInputChange={handleInputChange}
+              handleAdd={handleAddEvent}
+              title="Add Event"
+              alertMessage={alertMessage} // Pass the alert message as a prop
+              alertType={alertType}
+            />
             <CommonGrid
               items={events}
               deleteHandler={deleteEvent}
@@ -301,15 +367,22 @@ const Events = ({ applicationId }: EventsProps) => {
               itemType="event"
               onCheckboxClick={handleCheckboxClick}
             />
-            <TablePagination
-              component="div"
-              count={parseInt(totalCount)}
-              page={page}
-              onPageChange={handleChangePage}
-              rowsPerPage={rowsPerPage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-
+            <div
+              style={{
+                backgroundColor: "white",
+                marginLeft: "5%",
+                marginRight: "5%",
+              }}
+            >
+              <TablePagination
+                component="div"
+                count={parseInt(totalCount)}
+                page={page}
+                onPageChange={handleChangePage}
+                rowsPerPage={rowsPerPage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </div>
             <Notifications
               eventId={selectedEventId}
               applicationId={applicationId}
