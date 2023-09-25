@@ -1,5 +1,11 @@
-import React, { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import Paper from "@mui/material/Paper";
+
+// Define your alert types
+const ALERT_TYPES = {
+  SUCCESS: "success",
+  ERROR: "error",
+};
 import {
   Table,
   TableBody,
@@ -15,6 +21,8 @@ import DeleteDialog from "../DeleteDialog/DeleteDialog";
 import "./Grid.css";
 import NotificationDialog from "../NotificationDialog/NotificationDialog";
 import { useNavigate } from "react-router-dom";
+import { useBetween } from "use-between";
+import States from "../../States";
 
 interface CommonItem {
   id: number;
@@ -45,9 +53,11 @@ const CommonGrid = <T extends CommonItem>({
   onCheckboxClick,
 }: Props<T>) => {
   const navigate = useNavigate();
-  console.log(items);
+  // console.log(items);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<T | null>(null);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertType, setAlertType] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -57,6 +67,9 @@ const CommonGrid = <T extends CommonItem>({
       template_body: "",
     }),
   });
+
+  const { selectedItems, setSelectedItems } = useBetween(States);
+  // const [selectedItems, setSelectedItems] = useState<number | null>(null);
 
   const openModal = (item: T) => {
     setSelectedItem(item);
@@ -81,9 +94,16 @@ const CommonGrid = <T extends CommonItem>({
       ...formData,
       [name]: value,
     });
+    // Clear the alert message when the user starts typing
+    if (name === "name" || name === "description") {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    console.log("here save");
+
     if (selectedItem) {
       const updatedItem: T = {
         ...selectedItem,
@@ -94,10 +114,39 @@ const CommonGrid = <T extends CommonItem>({
           template_body: formData.template_body,
         }),
       };
-      editHandler(updatedItem);
-      closeModal();
+      // editHandler(updatedItem);
+      // closeModal();
+      try {
+        console.log("here1");
+        const message = await editHandler(updatedItem);
+
+        console.log("message a arhaa hai", message);
+
+        // On success, set the success alert
+        setAlertMessage(message);
+        console.log("alert message check", alertMessage);
+        setAlertType(ALERT_TYPES.SUCCESS);
+
+        // Close the modal after a brief delay (you can adjust the delay)
+        setTimeout(() => {
+          closeModal();
+        }, 1000);
+      } catch (error) {
+        // On error, set the error alert
+        setAlertMessage(error);
+        console.log("alert message check", alertMessage);
+        setAlertType(ALERT_TYPES.ERROR);
+      }
     }
   };
+
+  // Reset the alert when the dialog is opened or closed
+  useEffect(() => {
+    if (!isModalOpen) {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
+  }, [isModalOpen]);
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
@@ -118,13 +167,11 @@ const CommonGrid = <T extends CommonItem>({
     }
   };
 
-  const [selectedItems, setSelectedItems] = useState<number | null>(null);
-
   const handleCheckboxClick = (itemId: number) => {
     if (selectedItems === itemId) {
       // If the same event is clicked again, unselect it and show all notifications
       setSelectedItems(null);
-      onCheckboxClick(null); // Pass null to indicate showing all notifications
+      onCheckboxClick(null);
     } else {
       setSelectedItems(itemId);
       onCheckboxClick(itemId);
@@ -138,6 +185,38 @@ const CommonGrid = <T extends CommonItem>({
     navigate(editNotificationUrl);
   };
 
+  const switchActive_fun = async (item: T, active: boolean) => {
+    const editedItem: T = {
+      ...item,
+      isActive: !active,
+    };
+
+    console.log("COMMON GRID:", editedItem, editedItem.isActive);
+    console.log("cg_check:", active);
+
+    try {
+      console.log("here1");
+      const message = await editHandler(editedItem);
+
+      console.log("message a arhaa hai", message);
+
+      // On success, set the success alert
+      setAlertMessage(message);
+      console.log("alert message check", alertMessage);
+      setAlertType(ALERT_TYPES.SUCCESS);
+
+      // Close the modal after a brief delay (you can adjust the delay)
+      setTimeout(() => {
+        closeModal();
+      }, 1000);
+    } catch (error) {
+      // On error, set the error alert
+      setAlertMessage(error);
+      console.log("alert message check", alertMessage);
+      setAlertType(ALERT_TYPES.ERROR);
+    }
+  };
+
   return (
     <>
       <br />
@@ -147,24 +226,35 @@ const CommonGrid = <T extends CommonItem>({
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell></TableCell>
+                  {itemType === "event" && <TableCell></TableCell>}
                   <TableCell>
-                    {itemType === "event" ? "Event Name" : "Notification Name"}
+                    <strong>
+                      {itemType === "event"
+                        ? "Event Name"
+                        : "Notification Name"}
+                    </strong>
                   </TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell className="actions-column">Actions</TableCell>
+                  <TableCell>
+                    {" "}
+                    <strong>Description</strong>
+                  </TableCell>
+                  <TableCell className="actions-column">
+                    <strong>Actions</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {items.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="checkbox-cell">
-                      <Checkbox
-                        onClick={() => handleCheckboxClick(item.id)}
-                        color="primary"
-                        checked={selectedItems === item.id} // Highlight selected checkboxes
-                      />
-                    </TableCell>
+                    {itemType === "event" && (
+                      <TableCell className="checkbox-cell">
+                        <Checkbox
+                          onClick={() => handleCheckboxClick(item.id)}
+                          color="primary"
+                          checked={selectedItems === item.id} // Highlight selected checkboxes
+                        />
+                      </TableCell>
+                    )}
                     <TableCell>{item.name}</TableCell>
                     <TableCell>{item.description}</TableCell>
                     <TableCell>
@@ -174,6 +264,9 @@ const CommonGrid = <T extends CommonItem>({
                           onEditClick={() => openModal(item)}
                           onDeleteClick={() => openDeleteConfirmation(item)}
                           isActive={item.isActive}
+                          switchActive_fun={() => {
+                            switchActive_fun(item, item.isActive);
+                          }}
                         />
                       ) : (
                         // Render the action buttons for notifications with different edit behavior
@@ -181,6 +274,9 @@ const CommonGrid = <T extends CommonItem>({
                           onEditClick={() => handleEditNotification(item.id)}
                           onDeleteClick={() => openDeleteConfirmation(item)}
                           isActive={item.isActive}
+                          switchActive_fun={() => {
+                            switchActive_fun(item, item.isActive);
+                          }}
                         />
                       )}
                     </TableCell>
@@ -200,6 +296,9 @@ const CommonGrid = <T extends CommonItem>({
             formData={formData}
             handleInputChange={handleInputChange}
             handleSave={handleSave}
+            alertMessage={alertMessage}
+            alertType={alertType}
+            title={"Event"}
           />
         ) : (
           <NotificationDialog
@@ -213,11 +312,21 @@ const CommonGrid = <T extends CommonItem>({
       </div>
 
       <div>
-        <DeleteDialog
-          open={isDeleteConfirmationOpen}
-          onClose={closeDeleteConfirmation}
-          onConfirm={confirmDelete}
-        />
+        {itemType === "event" ? (
+          <DeleteDialog
+            open={isDeleteConfirmationOpen}
+            onClose={closeDeleteConfirmation}
+            onConfirm={confirmDelete}
+            title={"event"}
+          />
+        ) : (
+          <DeleteDialog
+            open={isDeleteConfirmationOpen}
+            onClose={closeDeleteConfirmation}
+            onConfirm={confirmDelete}
+            title={"notification"}
+          />
+        )}
       </div>
     </>
   );

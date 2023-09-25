@@ -1,14 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { ChangeEvent } from "react";
 import apiClient from "../../apiService/api-client";
 import { useEffect, useState } from "react";
 import "./Application.css";
 import Cards from "./Card/Card";
 import { BiSolidRightArrow, BiSolidLeftArrow } from "react-icons/bi";
+import Alert from "@mui/material/Alert";
+// import AlertTitle from "@mui/material/AlertTitle";
 import "./CardSlider/CardSlider.css";
 import Events from "../Events/Events";
 import TabBar from "../../common/TabBar/TabBar";
 import AddDialog from "../../common/AddDialog/AddDialog";
+import { useBetween } from "use-between";
+import States from "../../States";
 
+// Define your alert types
+const ALERT_TYPES = {
+  SUCCESS: "success",
+  ERROR: "error",
+};
 interface Applications {
   id: number;
   name: string;
@@ -23,38 +33,143 @@ interface ApiResponse {
   applications: Applications[];
 }
 
-function Applications() {
+const Applications = () => {
   const [applications, setApplications] = useState<Applications[]>([]);
+  const [totalCount, setTotalCount] = useState<string>("");
 
-  const [selectedApplicationId, setSelectedApplicationId] = useState<
-    number | null
-  >(null);
-  // Add a state to control the visibility of events
+  // const [selectedApplicationId, setSelectedApplicationId] = useState<
+  //   number | null
+  // >(null);
+
+  const {
+    selectedApplicationId,
+    selectedEventId,
+    setSelectedApplicationId,
+    clikcedCardID,
+    setClickedCardID,
+  } = useBetween(States);
+
+  const [filtered_Applications, setfiltered_Applications] = useState<
+    Applications[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+
   const [showEvents, setShowEvents] = useState(false);
 
-  const [clikcedCardID, setClickedCardID] = useState<number>(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleCards] = useState<number>(calculateVisibleCards());
+  const isAtFirstCard = currentIndex === 0;
+  const isAtLastCard = currentIndex === filtered_Applications.length - 1;
+
+  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<string | null>(null);
+  const [alertType, setAlertType] = useState<string | null>(null);
+
+  // const handleCardClick = (appId: number) => {
+  //   // Toggle the display of events
+  //   setClickedCardID(clikcedCardID ? 0 : appId);
+  //   setShowEvents(!showEvents);
+
+  //   setSelectedApplicationId(showEvents ? null : appId);
+  // };
 
   const handleCardClick = (appId: number) => {
-    // Toggle the display of events
-    setClickedCardID(appId);
-    setShowEvents(!showEvents);
+    if (selectedApplicationId !== null) {
+      // Handle the case when state is coming from useBetween
+      if (appId !== selectedApplicationId || !showEvents) {
+        // Reset states for the new clicked card
+        setClickedCardID(appId);
+        setShowEvents(true);
+        setSelectedApplicationId(appId);
+      } else {
+        // Deselect the application if clicking the same card again
+        setClickedCardID(0);
+        setShowEvents(false);
+        setSelectedApplicationId(null);
+      }
+    } else {
+      // Handle the case when there is no state from useBetween
+      setClickedCardID(appId);
+      setShowEvents(true);
+      setSelectedApplicationId(appId);
+    }
+  };
 
-    // Set the selected application ID only if events are shown
-    setSelectedApplicationId(showEvents ? null : appId);
+  const [isActiveFilter, setIsActiveFilter] = useState<boolean | undefined>(
+    undefined
+  );
+  const [sortBy, setSortBy] = useState<
+    "name" | "created_at" | "updated_at" | undefined
+  >(undefined);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | undefined>(
+    undefined
+  );
+
+  const handleActiveClick = (isActive: boolean | undefined) => {
+    setIsActiveFilter(isActive);
+  };
+  const handleSortByClick = (
+    sortByValue: "name" | "created_at" | "updated_at" | undefined
+  ) => {
+    setSortBy(sortByValue);
+  };
+
+  const handleSortOrderClick = (sortOrderValue: "asc" | "desc" | undefined) => {
+    setSortOrder(sortOrderValue);
   };
 
   useEffect(() => {
+    // Construct the query string with optional parameters
+    const queryParams = [];
+
+    if (isActiveFilter !== undefined) {
+      queryParams.push(`isActive=${isActiveFilter}`);
+    }
+
+    if (sortBy) {
+      queryParams.push(`sortBy=${sortBy}`);
+    }
+
+    if (sortOrder) {
+      queryParams.push(`sortOrder=${sortOrder}`);
+    }
+
+    // Construct the final URL
+    const queryString = queryParams.join("&");
+    const url = `/applications${queryString ? `?${queryString}` : ""}`;
+
+    // Fetch data with the updated query parameters
     apiClient
-      .get<ApiResponse>("/applications")
+      .get<ApiResponse>(url)
       .then((res) => {
         setApplications(res.data.applications);
         setfiltered_Applications(res.data.applications);
+        setTotalCount(res.data.TotalCount);
+        setLoading(false);
       })
       .catch((error) => {
         // Handle any error that may occur during the API request
         console.error("Error fetching data:", error);
+        setLoading(false);
       });
-  }, []);
+  }, [isActiveFilter, sortBy, sortOrder]);
+
+  function filterObjectsByName(searchString: string): Applications[] {
+    if (searchString) {
+      const filteredApps = applications.filter((app) => {
+        const name = app.name.toLowerCase();
+        return name.includes(searchString.toLowerCase());
+      });
+      setfiltered_Applications(filteredApps);
+    } else {
+      // If the search field is empty, display all applications
+      setfiltered_Applications(applications);
+    }
+
+    setCurrentIndex(0);
+
+    return filtered_Applications;
+  }
 
   const deleteApplication = (application: Applications) => {
     // Create a new array that filters out the application to be deleted
@@ -65,36 +180,44 @@ function Applications() {
     // Update the state with the new array
     setApplications(updatedApplications);
 
+    const updated_filtered_apps = filtered_Applications.filter(
+      (app) => app.id !== application.id
+    );
+    setfiltered_Applications(updated_filtered_apps);
+
     apiClient
       .delete("/applications/" + application.id)
       .catch((err) => console.log(err.message));
   };
 
-  const editApplication = (updatedApplication: Applications) => {
-    // Remove the "id" field from the payload
+  const editApplication = async (updatedApplication: Applications) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, created_at, updated_at, isActive, ...dataWithoutId } =
-      updatedApplication;
+    const { id, created_at, updated_at, ...dataWithoutId } = updatedApplication;
 
-    // Send a PUT request to update the application on the server
-    apiClient
-      .put("/applications/" + updatedApplication.id, dataWithoutId) // Send the updated data without the "id"
-      .then((response) => {
-        // Assuming the server returns the updated application data
-        const updatedApps = applications.map((app) =>
-          app.id === updatedApplication.id ? response.data : app
-        );
-        setApplications(updatedApps);
-      })
-      .catch((error) => {
-        console.error("Error updating application:", error);
-      });
+    try {
+      const response = await apiClient.put(
+        "/applications/" + updatedApplication.id,
+        dataWithoutId
+      );
+      console.log(response);
+
+      const updatedApps = applications.map((app) =>
+        app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
+      );
+      setApplications(updatedApps);
+
+      const updated_filtered_apps = filtered_Applications.map((app) =>
+        app.id === updatedApplication.id ? { ...app, ...dataWithoutId } : app
+      );
+      setfiltered_Applications(updated_filtered_apps);
+
+      return "Data updated successfully!";
+    } catch (error) {
+      throw (
+        error.response?.data || "Error updating application. Please try again."
+      );
+    }
   };
-
-  // card things
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [visibleCards] = useState<number>(calculateVisibleCards());
 
   function calculateVisibleCards(): number {
     const screenWidth = window.innerWidth;
@@ -103,32 +226,39 @@ function Applications() {
   }
 
   function handleNext() {
-    const nextIndex = (currentIndex + 1) % applications.length;
+    const nextIndex = (currentIndex + 1) % filtered_Applications.length;
     setCurrentIndex(nextIndex);
   }
 
   function handlePrevious() {
     const prevIndex =
-      (currentIndex - 1 + applications.length) % applications.length;
+      (currentIndex - 1 + filtered_Applications.length) %
+      filtered_Applications.length;
     setCurrentIndex(prevIndex);
   }
 
-  const isAtFirstCard = currentIndex === 0;
-  const isAtLastCard = currentIndex === applications.length - 1;
-
-  // add application functionality
-
-  const [isAddDialogOpen, setAddDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
+
+    // Remove leading spaces for "name" and "description" fields
+    let trimmedValue = value;
+    if (name === "name" || name === "description") {
+      trimmedValue = value.replace(/^\s+/, "");
+    }
+
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: trimmedValue,
     });
+    // Clear the alert message when the user starts typing
+    if (name === "name" || name === "description") {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
   };
 
   const handleAddClick = () => {
@@ -148,36 +278,42 @@ function Applications() {
     name: string;
     description: string;
   }) => {
+    const trimmedName = newApplication.name.trim();
+    const trimmedDescription = newApplication.description.trim();
+    const newApplication2 = {
+      name: trimmedName,
+      description: trimmedDescription,
+    };
+
     // Make a POST request to add the new application
+
     apiClient
-      .post("/applications", newApplication)
+      .post("/applications", newApplication2)
       .then((response) => {
         // Assuming the server returns the added application data
         const addedApp = response.data;
         setApplications([...applications, addedApp]);
-        handleCloseAddDialog();
+        setfiltered_Applications([...applications, addedApp]);
+        setAlertMessage("Data added successfully!");
+        setAlertType(ALERT_TYPES.SUCCESS);
+
+        // Close the modal after a brief delay (you can adjust the delay)
+        setTimeout(() => {
+          handleCloseAddDialog();
+        }, 1000);
       })
       .catch((error) => {
-        console.error("Error adding application:", error);
+        setAlertMessage(error.response.data);
+        setAlertType(ALERT_TYPES.ERROR);
       });
   };
 
-  // FILTERING APPLICATIONS
-  const [filtered_Applications, setfiltered_Applications] = useState<
-    Applications[]
-  >([]);
-
-  function filterObjectsByName(searchString: string): Applications[] {
-    setfiltered_Applications(
-      applications.filter((apps) => {
-        const name = apps.name.toLowerCase();
-        searchString = searchString.toLowerCase();
-        return name.includes(searchString);
-      })
-    );
-
-    return filtered_Applications;
-  }
+  useEffect(() => {
+    if (!isAddDialogOpen) {
+      setAlertMessage(null);
+      setAlertType(null);
+    }
+  }, [isAddDialogOpen]);
 
   return (
     <>
@@ -185,52 +321,83 @@ function Applications() {
         title={"APPLICATIONS"}
         onAddClick={handleAddClick}
         submitFunction={filterObjectsByName}
+        totalCount={totalCount}
+        onActiveClick={handleActiveClick}
+        onSortByClick={handleSortByClick}
+        onSortOrderClick={handleSortOrderClick}
       />
-      <div className="container-fluid">
-        <div className="row">
-          <div className="TBS_slider-container">
-            <BiSolidLeftArrow
-              onClick={handlePrevious}
-              disabled={isAtFirstCard}
-              className="TBS_arrow_button_left"
-            />
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            color: "blue",
+            marginTop: "20px",
+            marginBottom: "20px",
+          }}
+        >
+          Loading...
+        </div>
+      ) : (
+        <div className="container-fluid">
+          {filtered_Applications.length === 0 ? (
+            <Alert severity="warning" className="my-Alerts">
+              No Applications Found —{" "}
+              <strong>There are currently no Applications!</strong>
+            </Alert>
+          ) : (
+            <div className="row">
+              <div className="TBS_slider-container">
+                <BiSolidLeftArrow
+                  onClick={handlePrevious}
+                  disabled={isAtFirstCard}
+                  className="TBS_arrow_button_left"
+                />
 
-            <div className="TBS_slider">
-              <div
-                className="TBS_card-wrapper"
-                style={{ transform: `translateX(-${currentIndex * 260}px)` }} // Adjust card width
-              >
-                {filtered_Applications.map((app, index) => (
+                <div className="TBS_slider">
                   <div
-                    key={index}
-                    className={`TBS_slider-card ${
-                      index >= currentIndex &&
-                      index < currentIndex + visibleCards
-                        ? "visible"
-                        : ""
-                    }`}
+                    className="TBS_card-wrapper"
+                    style={{
+                      transform: `translateX(-${currentIndex * 260}px)`,
+                    }} // Adjust card width
                   >
-                    <Cards
-                      clicked_id={clikcedCardID}
-                      card_id={app.id}
-                      applications={app}
-                      deleteHandler={deleteApplication}
-                      editHandler={editApplication}
-                      onClick={() => handleCardClick(app.id)}
-                    />
+                    {filtered_Applications.map((app, index) => (
+                      <div
+                        key={index}
+                        className={`TBS_slider-card ${
+                          index >= currentIndex &&
+                          index < currentIndex + visibleCards
+                            ? "visible"
+                            : ""
+                        }`}
+                      >
+                        <Cards
+                          clicked_id={clikcedCardID}
+                          card_id={app.id}
+                          applications={app}
+                          deleteHandler={deleteApplication}
+                          editHandler={editApplication}
+                          onClick={() => handleCardClick(app.id)}
+                          AlertMessage={alertMessage} // Pass the alert message as a prop
+                          AlertType={alertType}
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                <BiSolidRightArrow
+                  onClick={handleNext}
+                  disabled={isAtLastCard}
+                  className="TBS_arrow_button_right"
+                  // style={{ width: "5px", height: "10px" }}
+                />
               </div>
             </div>
-
-            <BiSolidRightArrow
-              onClick={handleNext}
-              disabled={isAtLastCard}
-              className="TBS_arrow_button_right"
-            />
-          </div>
+          )}
         </div>
-      </div>
+      )}
       <AddDialog
         open={isAddDialogOpen}
         onClose={handleCloseAddDialog}
@@ -238,10 +405,19 @@ function Applications() {
         handleInputChange={handleInputChange}
         handleAdd={handleAddApplication}
         title="Add Application"
+        alertMessage={alertMessage} // Pass the alert message as a prop
+        alertType={alertType}
       />
-      <Events applicationId={selectedApplicationId} />
+
+      {filtered_Applications.length !== 0 && (
+        <Events
+          applicationId={
+            selectedApplicationId === clikcedCardID ? clikcedCardID : null
+          }
+        />
+      )}
     </>
   );
-}
+};
 
 export default Applications;

@@ -1,0 +1,68 @@
+/* Add this CSS to your component's stylesheet */
+
+/* Style the grid */
+.grid-container {
+  display: flex;
+  height: 300px;
+  margin: 16px 0;
+  padding: 80px 80px 0px 80px;
+}
+
+/* Style the left side (form) */
+.grid-left {
+  flex: 1;
+  padding: 16px;
+  margin-right: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: white;
+}
+
+/* Style the right side (preview) */
+.grid-right {
+  flex: 1;
+  padding: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: white;
+}
+
+/* Style form elements */
+.grid-left .MuiTextField-root,
+.grid-left .MuiButton-root {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+/* Style text fields */
+.grid-right .MuiTextField-root {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background-color: #f8f8f8;
+  /* padding: 8px; */
+  border-radius: 5px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.buttonContainer {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+  padding-left: 20px; /* Add some margin to separate the buttons from the text field */
+}
+
+.validation-error {
+  color: red; /* Set the text color to red */
+  font-size: 14px; /* Adjust the font size as needed */
+  margin-top: 0px;
+  margin-bottom: 14px;
+}
+.custom-mentions-input {
+  padding: 8px;
+  font-size: 16px;
+  border-radius: 5px;
+}

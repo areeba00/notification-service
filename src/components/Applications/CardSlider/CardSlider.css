@@ -32,6 +32,7 @@
 .TBS_slider-card {
   opacity: 0.3;
   transition: 1s cubic-bezier(0.075, 0.82, 0.165, 1);
+  /* width: 240px; */
 }
 .TBS_slider-card.visible {
   opacity: 1;
@@ -46,8 +47,9 @@
   .TBS_arrow_button_right,
   .TBS_arrow_button_left {
     transform: scale(10);
-    margin-left: 40px;
+    margin-left: 60px;
     margin-right: 40px;
+  /* max-width: 1000px; */
   }
 }
 
@@ -56,19 +58,21 @@
     transform: scale(1);
     margin-right: -20px;
     padding: 0px;
+    /* max-height: 60px; */
   }
 
   .TBS_arrow_button {
     width: 60px;
     height: 60px;
+    
   }
   .TBS_arrow_button_left {
-    transform: scale(20);
+    transform: scale(10);
     margin-left: 7px;
     margin-right: 20px;
   }
   .TBS_arrow_button_right {
-    transform: scale(20);
+    transform: scale(10);
     margin-right: 7px;
     margin-left: 20px;
   }
