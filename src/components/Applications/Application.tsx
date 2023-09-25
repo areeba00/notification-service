@@ -72,25 +72,6 @@ const Applications = () => {
 
   //   setSelectedApplicationId(showEvents ? null : appId);
   // };
-  // const handleCardClick = (appId: number) => {
-  //   if (selectedApplicationId !== null) {
-  //     // Handle the case when state is coming from useBetween
-  //     if (appId !== selectedApplicationId) {
-  //       // Reset states for the new clicked card
-  //       setClickedCardID(appId);
-  //       setShowEvents(true);
-  //       setSelectedApplicationId(appId);
-  //     } else {
-  //       // Toggle the display of events if clicking the same card again
-  //       setShowEvents(!showEvents);
-  //     }
-  //   } else {
-  //     // Handle the case when there is no state from useBetween
-  //     setClickedCardID(appId);
-  //     setShowEvents(true);
-  //     setSelectedApplicationId(appId);
-  //   }
-  // };
 
   const handleCardClick = (appId: number) => {
     if (selectedApplicationId !== null) {
